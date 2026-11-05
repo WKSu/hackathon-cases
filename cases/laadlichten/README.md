@@ -13,6 +13,7 @@ Team Laadlichten · onderwerp Wegbeheer · Themadag Mobiliteit, 5 november 2026.
 - [x] Signalenlijst "Aandacht nodig": geen tellingen, mogelijke lusstoring, daling, vervanging ≤ 2027 (zie D-007, D-008)
 - [x] *Stretch:* schets van een basisregeling: fasering, groentijdenplan, functionele specificatie en beleidsknoppen (zie D-009)
 - [x] "Hoe te demonstreren" (3 stappen). Er komt bewust geen screenshot in de repo, omdat die niet-openbare VRI-data toont (D-002).
+- [x] Uitlegpagina `prototype/uitleg.html`: wat is het, hoe is het gemaakt, wat kun je ermee (gevraagd door de eigenaar; vanuit de kaart te openen via "uitleg")
 
 ## Zo draai je het
 
@@ -66,7 +67,7 @@ Overgenomen uit het ontwerpformulier van het team. Persoonsgegevens zijn weggela
 - **Datakwaliteit.**
   - De kenmerkentabel is van januari 2023. Vervangjaren 2023–2026 zijn dus misschien al uitgevoerd; we tonen ze als "te verifiëren".
   - Rijstrooknamen in ITF kennen minstens vijf notaties, bijvoorbeeld `02_1`, `03.1`, `08.1 afvoer`, `Statenweg-25` en `ZW_Hoofdweg_1`.
-  - Er zit geen laag met rijstrookverbindingen in de ITF-export. De conflictmatrix wordt daarom afgeleid (D-004, D-005).
+  - Er zit geen laag met rijstrookverbindingen in de ITF-export. De schets gebruikt daarom een vaste fasering volgens de standaardnummering, en geen conflictmatrix (D-009).
 - **"Storing" is een signaal, geen diagnose.** Nul tellingen kan een kapotte lus zijn, maar ook dataverlies of een omgebouwd kruispunt. De UI zegt "mogelijke storing".
 - **Privacy.** We gebruiken alleen uur-aggregaten per signaalgroep. Ruwe iVRI-logdata is deels herleidbaar tot personen, en iVRI's staan in het algoritmeregister.
 - **Publieke repo.** De VRI-data is geen open data. Daarom komt er geen `data.js` in git (D-002). Het prototype draait vanmiddag op de laptop met de lokale data.

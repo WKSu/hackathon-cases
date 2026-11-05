@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Laadlichten · uitleg</title>
+<style>
+  :root {
+    color-scheme: light;
+    --bg: #f6f5f1;
+    --surface: #fcfcfb;
+    --line: #e3e1da;
+    --ink: #1d2330;
+    --ink-2: #52514e;
+    --link: #2a78d6;
+    --critical: #d03b3b;
+    --serious: #ec835a;
+    --warning: #fab219;
+    --groen: #0ca30c;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  .wrap { max-width: 920px; margin: 0 auto; padding: 0 16px 48px; }
+  header { background: var(--surface); border-bottom: 1px solid var(--line); }
+  header .wrap { display: flex; align-items: center; gap: 12px; padding-top: 10px; padding-bottom: 10px; }
+  header b { font-size: 15px; }
+  header a { margin-left: auto; }
+  a { color: var(--link); }
+  .btn { display: inline-block; background: var(--ink); color: #fff; text-decoration: none; padding: 8px 14px; border-radius: 6px; font-weight: 600; }
+  .btn.ghost { background: #fff; color: var(--ink); border: 1px solid var(--line); }
+  .hero { padding: 32px 0 8px; }
+  .hero .kicker { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--ink-2); }
+  h1 { font-size: 28px; line-height: 1.2; margin: 6px 0 10px; }
+  .lead { font-size: 17px; color: var(--ink-2); max-width: 680px; margin: 0 0 16px; }
+  .acts { display: flex; gap: 8px; flex-wrap: wrap; }
+  h2 { font-size: 19px; margin: 36px 0 12px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr)); gap: 12px; }
+  .card { background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; }
+  .card h3 { font-size: 15px; margin: 0 0 6px; }
+  .card p, .card ul { margin: 0; font-size: 14px; color: var(--ink-2); }
+  .card ul { padding-left: 18px; }
+  .ico { display: inline-grid; place-items: center; width: 16px; height: 16px; border-radius: 50%; color: #fff; font-size: 11px; font-weight: 700; vertical-align: -2px; margin-right: 4px; }
+  .flow { display: grid; grid-template-columns: 1fr auto 1fr auto 1fr auto 1fr; align-items: stretch; gap: 8px; }
+  .flow .card { padding: 12px 14px; }
+  .flow .pijl { align-self: center; color: var(--ink-2); font-size: 20px; }
+  .flow small { display: block; color: var(--ink-2); font-size: 13px; margin-top: 4px; }
+  .regels { background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 12px 16px; margin-top: 12px; font-size: 14px; }
+  .regels dt { font-weight: 600; }
+  .regels dd { margin: 0 0 6px; color: var(--ink-2); }
+  .twee { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .let { border-left: 4px solid var(--warning); background: #fff; border-radius: 4px; padding: 12px 16px; }
+  .let ul { margin: 0; padding-left: 18px; }
+  .let li { margin: 4px 0; }
+  ol.vragen li { margin: 4px 0; }
+  footer { color: var(--ink-2); font-size: 13px; border-top: 1px solid var(--line); margin-top: 40px; padding-top: 12px; }
+  @media (max-width: 760px) {
+    .flow { grid-template-columns: 1fr; }
+    .flow .pijl { transform: rotate(90deg); justify-self: center; }
+    .twee { grid-template-columns: 1fr; }
+    h1 { font-size: 24px; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap"><b>Laadlichten · uitleg</b><a href="index.html">Open de kaart →</a></div>
+</header>
+<main class="wrap">
+
+  <section class="hero">
+    <div class="kicker">Team Laadlichten · Wegbeheer · themadag Mobiliteit, 5 november 2026</div>
+    <h1>Een levende kaart van de Rotterdamse verkeerslichten</h1>
+    <p class="lead">Op één kaart staan alle verkeerslichten (VRI's). De kaart wijst zelf aan waar de detectie of de datalevering mogelijk hapert. Per kruispunt zie je ook een eerste schets van de groentijden.</p>
+    <div class="acts">
+      <a class="btn" href="index.html">Open de kaart</a>
+      <a class="btn ghost" href="https://github.com/WKSu/hackathon-cases/tree/case/ll/cases/laadlichten">Plan en besluiten</a>
+    </div>
+  </section>
+
+  <h2>Waarom</h2>
+  <div class="grid">
+    <div class="card"><h3>Veel handwerk</h3><p>Een verkeerslicht programmeren kost veel manuren, terwijl de basis vastligt: de vorm van het kruispunt en het verkeer dat er rijdt.</p></div>
+    <div class="card"><h3>Storingsgevoelig</h3><p>Groen aanvragen gaat via detectielussen en drukknoppen. Als die stuk gaan, merk je dat vaak pas laat.</p></div>
+    <div class="card"><h3>De wens van het team</h3><p>Van geometrie + verkeersdata + beleid (zoals ov-prioriteit of fietsers voor bij regen) snel naar een basisregeling.</p></div>
+  </div>
+
+  <h2>Wat zie je</h2>
+  <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(min(100%,380px),1fr))">
+    <div class="card">
+      <h3>De kaart</h3>
+      <p>292 VRI's. Kies waarop je de kaart kleurt: <b>signalen</b>, <b>detectie</b> (aantal lussen en drukknoppen), <b>ov-prioriteit</b> of <b>vervangjaar</b>.</p>
+    </div>
+    <div class="card">
+      <h3>Aandacht nodig</h3>
+      <ul style="list-style:none;padding:0">
+        <li><span class="ico" style="background:var(--critical)">!</span><b>9</b> mogelijke lusstoringen: een deel van de signaalgroepen telt niets meer</li>
+        <li><span class="ico" style="background:var(--serious)">×</span><b>16</b> VRI's zonder tellingen, allemaal iVRI's: waarschijnlijk de datalevering</li>
+        <li><span class="ico" style="background:var(--warning)">↓</span><b>40</b> VRI's met een daling van meer dan 50%</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>Per kruispunt</h3>
+      <p>Rijstroken, lussen en drukknoppen op de kaart, het dagprofiel van vorig jaar naast dat van nu, en een tabel per signaalgroep. Er komt een waarschuwing als signaalgroepen misschien hernummerd zijn.</p>
+    </div>
+    <div class="card">
+      <h3>Basisregeling-schets</h3>
+      <p>Een groentijdenplan uit de rijstroken en het drukste werkdaguur, met knoppen voor ov-prioriteit en regen, en een functionele specificatie. <b>Een capaciteitsschets, geen regeling.</b></p>
+    </div>
+  </div>
+
+  <h2>Hoe is het gemaakt</h2>
+  <div class="flow" role="list" aria-label="Van data naar kaart">
+    <div class="card" role="listitem"><b>Drie bronnen</b><small>VRI-kenmerken (peildatum jan 2023), ITF-geometrie van 181 kruispunten, tellingen per uur per signaalgroep</small></div>
+    <div class="pijl" aria-hidden="true">→</div>
+    <div class="card" role="listitem"><b>Prep-script</b><small>Python (uv). Gebruikt alleen september 2025 en september 2026. Maakt per signaalgroep een gemiddelde en een werkdagprofiel</small></div>
+    <div class="pijl" aria-hidden="true">→</div>
+    <div class="card" role="listitem"><b>Databestand</b><small>Alleen aggregaten. Blijft lokaal, want de VRI-data is niet openbaar</small></div>
+    <div class="pijl" aria-hidden="true">→</div>
+    <div class="card" role="listitem"><b>Kaartpagina</b><small>Eén HTML-bestand met Leaflet en een PDOK-ondergrond. De schets wordt in de browser berekend</small></div>
+  </div>
+  <dl class="regels">
+    <dt>Stil</dt><dd>Een signaalgroep die vorig jaar gemiddeld 5 of meer tellingen per uur had, en nu 0.</dd>
+    <dt>Daling</dt><dd>Nu minder dan de helft van september vorig jaar.</dd>
+    <dt>Groentijden</dt><dd>Webster op het drukste werkdaguur, met een vaste indeling in vier fasen volgens de standaard-kruispuntnummering.</dd>
+  </dl>
+  <p style="font-size:14px;color:var(--ink-2)">Gebouwd in ongeveer 90 minuten met Claude. Elke keuze staat in het besluitenlog (D-001 tot en met D-009), zodat iedereen kan zien wat er besloten is en waarom.</p>
+
+  <h2>Wat kun je ermee</h2>
+  <div class="twee">
+    <div class="card">
+      <h3>Vandaag</h3>
+      <ul>
+        <li>In één oogopslag zien waar de detectie of de datalevering mogelijk hapert, bij alle leveranciers.</li>
+        <li>Het gesprek met Wegbeheer en de aannemer voeren aan de hand van concrete kruispunten.</li>
+        <li>Laten zien hoe geometrie, data en beleid samen tot groentijden leiden.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>Met een volgende stap</h3>
+      <ul>
+        <li>Elke dag per detectielus controleren (VLOG-data) in plaats van eens per maand per signaalgroep. Werkzaamheden wegfilteren. Elke week een lijst per aannemer.</li>
+        <li>De volledige ITF gebruiken, met rijstrookverbindingen. Daaruit volgen de conflictmatrix en de ontruimingstijden (CROW).</li>
+        <li>Die specificatie invoeren in een bestaande CCOL-generator, bijvoorbeeld TLCGen, in plaats van AI zelf regelcode te laten schrijven.</li>
+      </ul>
+    </div>
+  </div>
+
+  <h2>Wat het (nog) niet kan</h2>
+  <div class="let">
+    <ul>
+      <li>Wegbeheer heeft de signalen <b>nog niet bevestigd</b>.</li>
+      <li>De data loopt tot 30 september 2026, en we vergelijken per maand. De regelautomaat meldt storingen zelf sneller.</li>
+      <li>We kijken per signaalgroep, niet per lus. Eén kapotte lus valt daardoor vaak niet op.</li>
+      <li>Voetgangers (drukknoppen) worden niet geteld. Signaalgroepen 6x, 8x en 9x heten op de kaart nog "overig".</li>
+      <li>De schets past de vaste vier fasen ook toe waar die niet kloppen. Maar 93 van de 194 kruispunten hebben alle vier de rechtdoor-richtingen. Fietsers en voetgangers worden niet meegerekend, en bij 49 kruispunten valt de cyclus boven 120 s. De getallen zijn dus indicatief. <b>Niet voor gebruik op straat.</b></li>
+      <li>De kenmerken, zoals het vervangjaar, zijn van januari 2023.</li>
+    </ul>
+  </div>
+
+  <h2>Vragen aan het team</h2>
+  <ol class="vragen">
+    <li>Wat zijn de signaalgroepen 6x, 8x en 9x in de Rotterdamse nummering?</li>
+    <li>Herkennen jullie de 9 mogelijke lusstoringen en de 16 iVRI's zonder tellingen?</li>
+    <li>Is een maandelijkse check nuttig naast de storingsmeldingen die er al zijn? Of moet het elke dag?</li>
+    <li>Met welk formaat werken regelaars: CCOL, TLCGen, iets anders?</li>
+  </ol>
+
+  <footer>Prototype van de themadag. De VRI-data staat lokaal en is niet openbaar. Op deze pagina staan alleen aantallen.</footer>
+</main>
+</body>
+</html>
