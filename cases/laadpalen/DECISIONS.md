@@ -115,3 +115,14 @@ Dit log wordt alleen aangevuld. Een oud besluit pas je niet aan: je vervangt het
   - **Uitbreiding:** een paalpunt binnen 25 m van een bestaand laadvak krijgt het label "uitbreiding bestaande locatie". De kabelregel geldt dan als waarschijnlijk vervuld.
 - **Why:** in de oude ranking overlapten de 200 m-cirkels van de top 5 voor 70%. Daardoor werd hetzelfde tekort vijf keer geteld. 25% van de kandidaat-paalpunten ligt binnen 25 m van een bestaand laadvak, en de beleidsregel noemt uitbreiding van bestaande laadlocaties als optie.
 - **Rejected alternative:** uitbreiding automatisch voorrang geven. Zonder bezettingsdata weten we niet of de bestaande paal vol is (parking lot).
+
+## D-013: Publiceren via GitHub Pages; `data.js` gaat in git
+- **Status:** accepted (vervangt D-002)
+- **When / who:** 2026-11-05 14:20 · besluit van de gebruiker, uitgevoerd door Claude
+- **Decision:**
+  - Het prep-script schrijft naar `prototype/data/data.js` (niet meer `data/private/`). Dat bestand gaat in git.
+  - De repo-root staat op GitHub Pages (`main`, `/`), met `.nojekyll`.
+  - Bij bijzondere vakken worden alle gehandicaptenparkeerplaatsen één label. Het onderscheid *op kenteken* valt weg.
+  - De BGT-cache en het runlog blijven in `data/private/` (buiten git).
+- **Why:** het team wil de kaart online kunnen delen. De bomen zijn open data (data.overheid.nl, publiek domein), BGT en CBS ook. De parkeervakken zijn niet als open data gevonden. De gebruiker besluit ze toch te publiceren, in lijn met de eigen repo `parkeercapaciteit`, die ook vakgeometrie op Pages zet. Een gehandicaptenparkeerplaats *op kenteken* hoort bij één auto en dus bij één persoon. Voor de toets is dat onderscheid niet nodig.
+- **Rejected alternative:** lokaal houden (D-002). Dan kan niemand de kaart zonder het prep-script openen. Ook niet gekozen: alleen open data publiceren (BGT-parkeervlakken zonder losse vakken). Dan valt de toets per vak weg.

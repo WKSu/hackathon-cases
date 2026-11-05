@@ -6,7 +6,7 @@ Prototypes built over the lunch break, between the morning design session and th
 |---|---|---|
 | Contractmanagement | [`cases/contractmanagement`](cases/contractmanagement) | Concept dashboard: overview of all contracts with stoplight signals (synthetic data) |
 | Laadlichten (wegbeheer): VRI | [`cases/laadlichten`](cases/laadlichten) | A "living map" of the city's traffic lights (VRIs) for civil servants |
-| Laadlichten (wegbeheer): laadpalen | [`cases/laadpalen`](cases/laadpalen) | Address search with a 200 m circle: which parking bays fit a new charging point under the 2025 placement policy |
+| Laadlichten (wegbeheer): laadpalen | [`cases/laadpalen`](cases/laadpalen) | Address search with a 200 m circle: which parking bays fit a new charging point under the 2025 placement policy. [Live](https://wksu.github.io/hackathon-cases/cases/laadpalen/prototype/) |
 
 ## How this repo works
 

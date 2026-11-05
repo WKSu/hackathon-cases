@@ -6,7 +6,8 @@ Team Laadlichten · onderwerp Wegbeheer · Themadag Mobiliteit, 5 november 2026.
 
 ## Status (demo vanmiddag)
 
-- [ ] Open besluiten in [`DECISIONS.md`](DECISIONS.md) bevestigd (D-001 t/m D-010)
+- [ ] Open besluiten in [`DECISIONS.md`](DECISIONS.md) bevestigd (D-001 t/m D-012; D-013 is besloten)
+- [x] Online via GitHub Pages: **https://wksu.github.io/hackathon-cases/cases/laadpalen/prototype/** (D-013)
 - [x] Prep-script: parkeervakken, bestaande laadvakken, bomen, BGT (stoep, fietspad, groen) en CBS-woningen samenvoegen tot `data.js` (lokaal; zie D-002)
 - [x] Kaart met adres zoeken en een cirkel van 200 m, met een omgevingspaneel: vakken, laadvakken, bomen, groen, stoepbreedte en woningen
 - [x] Toets per parkeervak aan de beleidsregel: kleur geschikt / maatwerk / ongeschikt, met de reden per criterium (D-004, D-005, D-009)
@@ -45,13 +46,13 @@ Overgenomen uit het ontwerpformulier van het team. Persoonsgegevens zijn weggela
 - Echte loopafstand over het netwerk: we rekenen hemelsbreed (D-007).
 - De hele stad.
 
-## Data (lokaal, buiten de repo)
+## Data (gepubliceerd in `prototype/data/data.js`, D-013)
 
 | Bron | Inhoud | Open? |
 |---|---|---|
-| Parkeervakken (gemeente) | één polygoon per vak, type langs/dwars/schuin | nog na te gaan, dus lokaal |
-| Bijzondere vakken (gemeente) | overlay met o.a. *Elektrische oplaadpunten* (bestaande laadvakken), gehandicapten, laden/lossen, deelauto, blauwe zone, eigen terrein | nog na te gaan, dus lokaal |
-| Bomen (gemeente) | stamlocatie, hoogteklasse, kroondiameter | nog na te gaan, dus lokaal |
+| Parkeervakken (gemeente) | één polygoon per vak, type langs/dwars/schuin | niet als open data gevonden; gepubliceerd op besluit van het team (D-013) |
+| Bijzondere vakken (gemeente) | overlay met o.a. *Elektrische oplaadpunten* (bestaande laadvakken), gehandicapten, laden/lossen, deelauto, blauwe zone, eigen terrein | idem; *op kenteken* is samengevoegd tot één label (D-013) |
+| Bomen (gemeente) | stamlocatie, hoogteklasse, kroondiameter | open (data.overheid.nl, publiek domein) |
 | BGT (PDOK) | wegdelen: voetpad, fietspad, parkeervlak, inrit, rijbaan; begroeid terrein | open (CC0) |
 | CBS 100 m-vierkanten 2024 | woningen en inwoners per vierkant | open |
 
@@ -79,7 +80,7 @@ uv run prep_laadpalen.py --parkeren <map met ParkeerVakken.shp> --tir <map TIR> 
 - **Datakwaliteit.** De gemeentelijke parkeervakken en de BGT zijn apart ingemeten, en liggen tot tientallen centimeters naast elkaar. De stoepbreedte is daarom een schatting (D-005).
 - **Aannames zijn zichtbaar.** Waar de beleidsregel geen getal noemt ("geen grote bomen nabij"), kiezen wij een drempel. Die staat als schuifje in beeld en in D-004.
 - **Privacy.** Het formulier vraagt om "het aantal adressen dat elektrisch rijdt". Kentekens per adres zijn persoonsgegevens. We tonen daarom woningen per 100 m-vak (CBS) en een aanname voor het aandeel EV's.
-- **Publieke repo.** De gemeentelijke lagen zijn niet bevestigd als open data. Daarom komt er geen `data.js` in git (D-002).
+- **Publieke repo.** `data.js` staat in git en is online (D-013). De gemeentelijke parkeervakken zijn niet als open data gevonden. Bij gehandicaptenparkeerplaatsen staat niet of ze op kenteken zijn: dat wijst naar één persoon.
 
 ## Hoe te demonstreren
 

@@ -172,13 +172,13 @@ code { background: var(--panel-2); padding: 1px 5px; border-radius: 4px; font-si
 
 <div id="nodata"><div class="card">
   <h1>Nog geen data</h1>
-  <p>Deze pagina leest <code>data/private/data.js</code>. Dat bestand staat niet in git: het bevat gemeentelijke lagen. Draai eerst het prep-script in deze map:</p>
+  <p>Deze pagina leest <code>data/data.js</code>. Draai eerst het prep-script in deze map:</p>
   <p><code>uv run prep_laadpalen.py --parkeren … --tir … --bomen … --cbs …</code></p>
   <p class="hint">Zie de README van de case voor de bronnen.</p>
 </div></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-<script src="data/private/data.js"></script>
+<script src="data/data.js"></script>
 <script>
 "use strict";
 const D = window.LAADPALEN;
