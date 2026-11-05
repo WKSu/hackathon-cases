@@ -65,6 +65,10 @@
   .chart .lg span { display: inline-flex; align-items: center; gap: 6px; }
   .chart .lg i { width: 18px; height: 0; border-top: 2px solid; display: inline-block; }
   .tip { position: absolute; pointer-events: none; background: var(--ink); color: #fff; font-size: 12px; padding: 4px 7px; border-radius: 4px; white-space: nowrap; transform: translate(-50%, -115%); display: none; }
+  .chk { display: flex; gap: 8px; align-items: flex-start; font-size: 13px; margin: 4px 0; cursor: pointer; }
+  .chk input { margin-top: 3px; }
+  .spec { padding-left: 18px; font-size: 13px; margin: 0; }
+  .spec li { margin: 3px 0; }
   .note { font-size: 12px; color: var(--ink-2); border-top: 1px solid var(--line); margin-top: 16px; padding-top: 10px; }
   #nodata { position: fixed; inset: 0; background: rgba(246, 245, 241, .97); display: flex; align-items: center; justify-content: center; z-index: 2000; padding: 16px; }
   #nodata[hidden] { display: none; }
@@ -114,7 +118,7 @@ const mv = (n, een, veel) => (n === 1 ? een : veel);
 const K = {
   critical: "#d03b3b", serious: "#ec835a", warning: "#fab219", ok: "#9b9a94", leeg: "#d6d4cc",
   b250: "#86b6ef", b400: "#3987e5", b550: "#1c5cab", b700: "#0d366b", s1: "#2a78d6", s2: "#eb6834",
-  lijn: "#52514e",
+  lijn: "#52514e", groen: "#0ca30c",
 };
 const STATUS = {
   storing: { label: "Mogelijke lusstoring", kleur: K.critical, icoon: "!" },
@@ -245,7 +249,7 @@ function overzicht() {
   kleurLaag();
 }
 
-function selecteer(v) {
+function selecteer(v, direct = false) {
   gekozen = v;
   kleurLaag();
   geoLaag.clearLayers();
@@ -257,9 +261,12 @@ function selecteer(v) {
       L.circleMarker([la, lo], { radius: 4, weight: 1, color: "#fff", fillOpacity: 1, interactive: false, fillColor: t === "l" ? K.s1 : t === "k" ? K.s2 : K.ok }).addTo(geoLaag);
     });
     const b = L.featureGroup(geoLaag.getLayers()).getBounds();
-    map.flyToBounds(b.isValid() ? b : L.latLng(v.lat, v.lon).toBounds(150), { maxZoom: 18, padding: [40, 40], duration: 0.8 });
+    const doel = b.isValid() ? b : L.latLng(v.lat, v.lon).toBounds(150);
+    if (direct) map.fitBounds(doel, { maxZoom: 18, padding: [40, 40] });
+    else map.flyToBounds(doel, { maxZoom: 18, padding: [40, 40], duration: 0.8 });
   } else {
-    map.flyTo([v.lat, v.lon], 17, { duration: 0.8 });
+    if (direct) map.setView([v.lat, v.lon], 17);
+    else map.flyTo([v.lat, v.lon], 17, { duration: 0.8 });
   }
   gekozen._m.bringToFront();
   detail(v);
@@ -291,6 +298,7 @@ function detail(v) {
         <tbody>${rijen.map((r) => `<tr data-sg="${r[0]}"><td>${pad(r[0])}</td><td>${soort(r[0])}</td><td class="r">${fmt(r[1])}</td><td class="r">${fmt(r[2])}</td><td>${stTekst(r[3])}</td></tr>`).join("")}</tbody>
       </table>
       <p class="note">Gemiddeld aantal tellingen per uur. Klik een rij aan voor het dagprofiel. De soort volgt de standaard-kruispuntnummering.</p>` : ""}
+    ${kanRegeling(v) ? `<div id="regeling"></div>` : ""}
     ${v.geo ? `
       <h3>Op de kaart</h3>
       <ul class="legend">
@@ -299,6 +307,95 @@ function detail(v) {
         <li><span class="sw" style="background:${K.s2}"></span>Drukknop</li>
       </ul>` : ""}`;
   if (start) toonSg(v, start[0]);
+  regelingSectie(v);
+}
+
+// ---------- Basisregeling-schets (D-009): geometrie + data + beleid -> groentijden ----------
+// Vaste fasering volgens de standaard-kruispuntnummering (1-3 oost, 4-6 zuid, 7-9 west, 10-12 noord;
+// per tak rechtsaf / rechtdoor / linksaf). Ov 42/48 rijdt mee met oost-west, 45/51 met noord-zuid.
+const FASEN = [
+  { naam: "Oost-west rechtdoor en rechtsaf", sg: [2, 8, 1, 7], ov: [42, 48] },
+  { naam: "Oost-west linksaf", sg: [3, 9], ov: [] },
+  { naam: "Noord-zuid rechtdoor en rechtsaf", sg: [5, 11, 4, 10], ov: [45, 51] },
+  { naam: "Noord-zuid linksaf", sg: [6, 12], ov: [] },
+];
+const SAT = 1800, VERLIES = 4, MINGROEN = 6, OV_EXTRA = 10, FIETS_REGEN = 8;
+const beleid = { ov: false, regen: false };
+const autoSg = (v) => v.sg.filter((r) => r[0] >= 1 && r[0] <= 12 && Math.max(...r[5]) > 0).map((r) => r[0]);
+const kanRegeling = (v) => autoSg(v).length >= 4;
+
+function regeling(v) {
+  const prof = Object.fromEntries(v.sg.map((r) => [r[0], r[5]]));
+  const auto = autoSg(v);
+  let uur = 0, best = -1;
+  for (let u = 0; u < 24; u++) {
+    const som = auto.reduce((a, g) => a + prof[g][u], 0);
+    if (som > best) { best = som; uur = u; }
+  }
+  const rs = D.geo[v.id]?.rs || {};
+  const fasen = FASEN.map((f) => {
+    const groepen = f.sg.filter((g) => auto.includes(g)).map((g) => ({ sg: g, q: prof[g][uur], n: rs[g] || 1 }));
+    const ovSg = f.ov.filter((g) => prof[g] && Math.max(...prof[g]) > 0);
+    return { naam: f.naam, groepen, ovSg, y: Math.max(0, ...groepen.map((x) => x.q / (SAT * x.n))) };
+  }).filter((f) => f.groepen.length);
+  if (beleid.regen) fasen.push({ naam: "Rondom groen fiets (bij regen)", groepen: [], ovSg: [], y: 0, vast: FIETS_REGEN });
+  const Lv = VERLIES * fasen.length;
+  const Y = fasen.reduce((a, f) => a + f.y, 0);
+  const webster = Y < 1 ? Math.round((1.5 * Lv + 5) / (1 - Y)) : Infinity;
+  const begrensd = webster > 120;
+  const C0 = Math.min(120, Math.max(40, webster));
+  const rest = Math.max(0, C0 - Lv - fasen.reduce((a, f) => a + (f.vast || 0), 0));
+  fasen.forEach((f) => { f.g = f.vast ?? Math.max(MINGROEN, Math.round((rest * f.y) / (Y || 1))); });
+  // Ov-fase: waar een ov-signaalgroep telt. Anders, als de VRI volgens de kenmerken ov-prioriteit heeft,
+  // de drukste fase, en dat noemen we dan expliciet een aanname.
+  let ovFase = fasen.find((f) => f.ovSg.length);
+  const ovAanname = !ovFase && /Bus|Tram/.test(v.prio);
+  if (ovAanname) ovFase = fasen.filter((f) => f.groepen.length).sort((a, b) => b.y - a.y)[0];
+  if (beleid.ov && ovFase) { ovFase.g += OV_EXTRA; ovFase.ovExtra = true; }
+  const C = fasen.reduce((a, f) => a + f.g + VERLIES, 0);
+  return { uur, fasen, Y, Lv, C, webster, begrensd, ovFase, ovAanname };
+}
+
+function regelingSectie(v) {
+  const el = $("#regeling");
+  if (!el) return;
+  const R = regeling(v);
+  const W = 340, rij = 24, ml = 26, mr = 8, mt = 26, w = W - ml - mr, H = mt + rij * R.fasen.length + 32;
+  const x = (t) => ml + (t / R.C) * w;
+  let t = 0;
+  const balken = R.fasen.map((f, i) => {
+    const y0 = mt + i * rij, g0 = t, g1 = t + f.g, e = g1 + VERLIES;
+    t = e;
+    const sgs = f.groepen.map((g) => pad(g.sg)).join(", ") || "alle fietsers";
+    return `<text x="0" y="${y0 + 13}" font-size="11" fill="#1d2330">F${i + 1}</text>
+      <rect x="${x(g0)}" y="${y0 + 2}" width="${Math.max(2, x(g1) - x(g0) - 2)}" height="14" rx="3" fill="${K.groen}"><title>F${i + 1} ${f.naam}: ${f.g} s groen (sg ${sgs})</title></rect>
+      <rect x="${x(g1)}" y="${y0 + 2}" width="${Math.max(2, x(e) - x(g1) - 2)}" height="14" rx="3" fill="${K.warning}"><title>Geel en ontruiming: aanname ${VERLIES} s</title></rect>`;
+  }).join("");
+  const ticks = [0, Math.round(R.C / 2), R.C].map((s) => `<text x="${x(s)}" y="${H - 18}" text-anchor="middle" font-size="10" fill="#52514e">${s} s</text>`).join("");
+  const rijen = R.fasen.map((f, i) => `<li><b>F${i + 1} ${f.naam}</b>: ${f.g} s groen${f.ovExtra ? ` (waarvan ${OV_EXTRA} s ov-prioriteit${f.ovSg.length ? `, sg ${f.ovSg.map(pad).join(", ")}` : "; aanname: het ov rijdt in de drukste fase"})` : ""}.
+      ${f.groepen.length ? f.groepen.map((g) => `sg ${pad(g.sg)}: ${fmt(g.q)} per uur, ${g.n} ${mv(g.n, "rijstrook", "rijstroken")}`).join("; ") : `Alle fietsrichtingen tegelijk groen, ${FIETS_REGEN} s.`}</li>`).join("");
+  el.innerHTML = `
+    <h3>Basisregeling-schets</h3>
+    <p class="sub" style="margin:0 0 6px">Van <b>geometrie</b> (rijstroken per signaalgroep, ITF) + <b>data</b> (drukste werkdaguur, ${D.meta.nu}) + <b>beleid</b> naar groentijden.</p>
+    <label class="chk"><input type="checkbox" data-beleid="ov" ${beleid.ov ? "checked" : ""} ${R.ovFase ? "" : "disabled"}> Ov-prioriteit: ${OV_EXTRA} s extra groen voor de fase met ov${!R.ovFase ? " (deze VRI heeft geen ov-prioriteit)" : R.ovAanname ? " (ov-richting onbekend: aanname is de drukste fase)" : ""}</label>
+    <label class="chk"><input type="checkbox" data-beleid="regen" ${beleid.regen ? "checked" : ""}> Regen: fietsers eerst (rondom groen fiets, ${FIETS_REGEN} s)</label>
+    <div class="chart">
+      <div class="lg"><span><i style="border-color:${K.groen};border-top-width:6px"></i>groen</span><span><i style="border-color:${K.warning};border-top-width:6px"></i>geel + ontruiming (aanname ${VERLIES} s)</span></div>
+      <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Groentijdenplan, cyclus ${R.C} seconden">
+        <text x="0" y="12" font-size="12" font-weight="600" fill="#1d2330">Groentijdenplan (schets), cyclus ${R.C} s</text>
+        ${balken}
+        <line x1="${ml}" x2="${ml + w}" y1="${mt + rij * R.fasen.length + 2}" y2="${mt + rij * R.fasen.length + 2}" stroke="#e3e1da"/>
+        ${ticks}
+        <text x="${ml + w / 2}" y="${H - 3}" text-anchor="middle" font-size="10" fill="#52514e">seconden in de cyclus</text>
+      </svg>
+    </div>
+    <h3>Functionele specificatie (schets)</h3>
+    <ol class="spec">
+      <li>Maatgevend uur: werkdag ${pad(R.uur)}:00–${pad(R.uur + 1)}:00 (${D.meta.nu}).</li>
+      ${rijen}
+      <li>Cyclustijd ${R.C} s. Webster: (1,5 · L + 5) / (1 − Y), met L = ${R.Lv} s en Y = ${fmt(R.Y, 2)}. Verzadiging ${fmt(SAT)} per rijstrook per uur, minimaal ${MINGROEN} s groen.${R.begrensd ? ` <b>Let op: Webster geeft ${Number.isFinite(R.webster) ? R.webster + " s" : "geen oplossing (Y ≥ 1)"}. Het kruispunt zit in dit uur tegen of boven de capaciteit. De basiscyclus is daarom begrensd op 120 s.</b>` : ""}</li>
+    </ol>
+    <div class="signal" style="border-color:${K.warning}"><b>Schets, geen regeling.</b> Er zijn geen ontruimingstijden volgens CROW berekend en er is geen conflictcontrole gedaan. Fietsers en voetgangers zijn niet doorgerekend. Niet voor gebruik op straat.</div>`;
 }
 
 function toonSg(v, sg) {
@@ -395,10 +492,16 @@ function init() {
     const tr = e.target.closest("tbody tr");
     if (tr && gekozen) toonSg(gekozen, Number(tr.dataset.sg));
   });
+  $("#side").addEventListener("change", (e) => {
+    const k = e.target.dataset.beleid;
+    if (k && gekozen) { beleid[k] = e.target.checked; regelingSectie(gekozen); }
+  });
 
   overzicht();
+  beleid.ov = /[#&]ov=1/.test(location.hash);
+  beleid.regen = /[#&]regen=1/.test(location.hash);
   const m = location.hash.match(/vri=(\w+)/);
-  if (m && byId[m[1]]) selecteer(byId[m[1]]);
+  if (m && byId[m[1]]) selecteer(byId[m[1]], true);
 }
 
 if (D) init(); else $("#nodata").hidden = false;

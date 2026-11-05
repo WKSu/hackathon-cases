@@ -11,8 +11,8 @@ Team Laadlichten · onderwerp Wegbeheer · Themadag Mobiliteit, 5 november 2026.
 - [x] Kaart met alle VRI's en een keuze van kleurlaag: signalen, detectie, OV-prioriteit, vervangjaar
 - [x] Kruispuntpaneel: kenmerken, dagprofiel per signaalgroep en de ITF-geometrie (rijstroken, lussen, drukknoppen) op de kaart
 - [x] Signalenlijst "Aandacht nodig": geen tellingen, mogelijke lusstoring, daling, vervanging ≤ 2027 (zie D-007, D-008)
-- [ ] *Stretch:* schets van een basisregeling voor 1 kruispunt: conflictmatrix, groentijdenplan, functionele specificatie (zie D-005)
-- [ ] "Hoe te demonstreren" (3 stappen) en een screenshot
+- [x] *Stretch:* schets van een basisregeling: fasering, groentijdenplan, functionele specificatie en beleidsknoppen (zie D-009)
+- [x] "Hoe te demonstreren" (3 stappen). Er komt bewust geen screenshot in de repo, omdat die niet-openbare VRI-data toont (D-002).
 
 ## Zo draai je het
 
@@ -41,7 +41,7 @@ Overgenomen uit het ontwerpformulier van het team. Persoonsgegevens zijn weggela
 
 **Wel:**
 - Een levende kaart van de echte Rotterdamse VRI's, met kleurlagen, een kruispuntpaneel en automatische signalen. Dit is de kern van het formulier.
-- Als er tijd over is (stretch): een basisregeling voor **één** vooraf gekozen kruispunt. Die bestaat uit een conflictmatrix, een groentijdenplan volgens Webster en een functionele specificatie in tekst. Het prep-script berekent alles vooraf. Dit laat de potentie zien van de stap "geometrie + data + beleid → basisregeling".
+- Als er tijd over is (stretch): een schets van een basisregeling. Die bestaat uit een vaste fasering volgens de standaardnummering, een groentijdenplan volgens Webster, knoppen voor ov-prioriteit en regen, en een functionele specificatie in tekst. Hij staat bij elke VRI met genoeg tellende auto-signaalgroepen (D-009). Dit laat de potentie zien van de stap "geometrie + data + beleid → basisregeling".
 
 **Niet:**
 - Regelcode die op straat gebruikt kan worden. Ontruimingstijden volgens de CROW-methode rekenen we ook niet.
@@ -71,16 +71,16 @@ Overgenomen uit het ontwerpformulier van het team. Persoonsgegevens zijn weggela
 - **Privacy.** We gebruiken alleen uur-aggregaten per signaalgroep. Ruwe iVRI-logdata is deels herleidbaar tot personen, en iVRI's staan in het algoritmeregister.
 - **Publieke repo.** De VRI-data is geen open data. Daarom komt er geen `data.js` in git (D-002). Het prototype draait vanmiddag op de laptop met de lokale data.
 
-## Hoe te demonstreren (concept, wordt definitief vóór de feature freeze)
+## Hoe te demonstreren
 
 1. Open de kaart (kleurlaag **Signalen**). Rood betekent dat een deel van de detectie in sep 2026 niets meer telde, terwijl er in sep 2025 wel verkeer was. Oranje betekent dat de hele VRI geen tellingen meer levert.
 2. Klik in "Aandacht nodig" op **Gordelweg - Soetendaalsebrug**. Je ziet welke signaalgroep stil is (sg 84), het dagprofiel van vorig jaar naast dat van nu, en de 54 lussen en 23 drukknoppen op het kruispunt. Laat ook **Schepenstraat - Schieweg** zien: daar waarschuwt de kaart zelf dat de signaalgroepen misschien hernummerd zijn.
-3. *Stretch:* klik op **Basisregeling-schets**. Je ziet de conflictmatrix en het groentijdenplan, berekend uit geometrie en spitsintensiteit. Zet ov-prioriteit aan en kijk hoe de verdeling verschuift.
+3. Open **Mathenesserbrug - Mathenesserplein** (`index.html#vri=22030`) en scroll naar de **Basisregeling-schets**. Het groentijdenplan is berekend uit de rijstroken (ITF) en het drukste werkdaguur. Zet ov-prioriteit aan: F1 krijgt 10 s extra, en de cyclus gaat van 68 naar 78 s. Zet daarna regen aan: er komt een fietsfase bij. Wijs op de disclaimer: dit is een startpunt, geen regeling.
 
 ## Parking lot
 
 - Een codeskelet van de regeling in een programmeertaal naar keuze, zoals het team vraagt (CCOL/C, Python, …), door Claude gegenereerd uit de functionele specificatie.
-- Schetsen van basisregelingen voor alle 109 kruispunten met bruikbare ITF-signaalgroepen.
+- Een conflictmatrix en ontruimingstijden (CROW) uit echte rijstrookverbindingen, zodra die in de ITF-export zitten. Daarmee wordt de schets een echte eerste versie van een regeling.
 - Een levende kaart voor Den Haag.
 - Een weerkoppeling (KNMI) voor "fiets voor bij regen".
 - Ov-prioriteit: kansen vinden door GTFS-routes over kruispunten zonder prioriteit te leggen.

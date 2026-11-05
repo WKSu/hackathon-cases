@@ -120,6 +120,17 @@ def load_itf() -> tuple[pd.DataFrame, dict[str, dict]]:
         ]
     for vri, grp in sensors.groupby("id"):
         geo.setdefault(vri, {})["sensors"] = grp[["lat", "lon", "t"]].values.tolist()
+
+    # Toeleidende rijstroken per signaalgroep, voor de basisregeling-schets (D-004).
+    # Alleen de eenvoudige notatie '02_1' / '03.1'; afvoerstroken tellen niet mee.
+    naam = lanes["lane_name"].fillna("")
+    afvoer = naam.str.contains("afvoer", case=False) | naam.str.match(
+        r"^(N|Z|O|W|NO|NW|ZO|ZW)_"
+    )
+    sgnr = pd.to_numeric(naam.str.extract(r"^(\d{2})[._]")[0], errors="coerce")
+    rs = lanes.assign(sg=sgnr)[~afvoer & sgnr.notna()].groupby(["id", "sg"]).size()
+    for (vri, sg), n in rs.items():
+        geo.setdefault(vri, {}).setdefault("rs", {})[str(int(sg))] = int(n)
     return tel, geo
 
 

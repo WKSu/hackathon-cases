@@ -46,7 +46,7 @@ Dit log wordt alleen aangevuld. Een oud besluit pas je niet aan: je vervangt het
 - **Rejected alternative:** een ruimtelijke join op afstand. Die geeft fouten bij kruispunten die dicht bij elkaar liggen. Een volledige parser voor alle notaties hebben we ook niet gebouwd: dat kost tijd en levert vandaag weinig extra op.
 
 ## D-005: Stretch: schets van een basisregeling voor 1 kruispunt, conflicten via de standaardnummering
-- **Status:** accepted (PR #1, reactie eigenaar: "Ga verder met dit plan")
+- **Status:** superseded by D-009
 - **When / who:** 2026-11-05 12:55 · Claude
 - **Decision:** dit bouwen we alleen als de kaart klaar is.
   - We kiezen één kruispunt uit de 109 met een standaardopbouw: vier takken, signaalgroepen 01–12 auto, 2x fiets, 3x voetganger, 4x/5x ov.
@@ -84,3 +84,14 @@ Dit log wordt alleen aangevuld. Een oud besluit pas je niet aan: je vervangt het
 - **Decision:** de kaart toont een waarschuwing als een VRI met een signaal ook signaalgroepen heeft die vorig jaar niet telden (basis < 1) en nu wel (≥ 5 per uur). De tekst: "Misschien is de regeling aangepast of zijn de signaalgroepen hernummerd." De status zelf blijft staan. Dit speelt bij 4 VRI's, bijvoorbeeld Schepenstraat - Schieweg: daar vielen sg 01 en 12 stil en tellen sg 03, 08 en 11 nieuw.
 - **Why:** het team vroeg om een tool met een kritische houding tegenover zijn eigen input. Een stille signaalgroep is niet altijd een kapotte lus. Dit vangt de meest voor de hand liggende andere verklaring af, zonder extra data.
 - **Rejected alternative:** zulke VRI's uit de signalen halen. Dan verdwijnt een mogelijk echte storing. Een aparte status "hernummerd" hebben we ook niet gekozen: dat is zonder bevestiging van Wegbeheer te stellig.
+
+## D-009: Basisregeling-schets: vaste 4-fasenstructuur, in de browser berekend, voor elke geschikte VRI
+- **Status:** proposed
+- **When / who:** 2026-11-05 13:50 · Claude
+- **Decision:**
+  - **Fasering:** de schets gebruikt een vaste fasering volgens de standaard-kruispuntnummering: F1 oost-west rechtdoor en rechtsaf (sg 01, 02, 07, 08), F2 oost-west linksaf (03, 09), F3 noord-zuid rechtdoor en rechtsaf (04, 05, 10, 11), F4 noord-zuid linksaf (06, 12). Er komt geen aparte conflictmatrix.
+  - **Groentijden:** Webster op het drukste werkdaguur van sep 2026. We nemen 1.800 per rijstrook per uur, met het aantal rijstroken per signaalgroep uit ITF. Verder 4 s verliestijd per fase, minimaal 6 s groen, en een cyclus tussen 40 en 120 s. De specificatie meldt het als Webster boven de 120 s uitkomt.
+  - **Beleid:** ov-prioriteit geeft +10 s voor de fase met een tellende ov-signaalgroep. Is die er niet, maar staat ov-prioriteit wel in de kenmerken, dan krijgt de drukste fase de extra tijd, met de aanname zichtbaar in beeld. De regenknop voegt een fase toe met 8 s rondom groen voor fietsers.
+  - De schets staat bij elke VRI met ≥4 tellende auto-signaalgroepen (194 VRI's). Demokruispunt: 22030 Mathenesserbrug - Mathenesserplein (cyclus 68 s, met ov 78 s).
+- **Why:** de eigenaar vroeg om het zo simpel mogelijk te houden. Rekenen in de browser met data die er al is, kost geen extra prep-stap. Eén kruispunt uitzonderen is even veel code als het overal tonen, en het team kan zo vanmiddag zelf door de stad klikken. De disclaimer staat bij elke schets.
+- **Rejected alternative:** een conflictmatrix uit rijstrookgeometrie (D-005). Zonder rijstrookverbindingen in ITF kan dat niet betrouwbaar. De schets alleen tonen voor 1 vast kruispunt: dat is het accepted scopehek, maar het helpt niet bij de eenvoud. Wil je dat toch, dan is het een wijziging van één regel in `kanRegeling()`.
