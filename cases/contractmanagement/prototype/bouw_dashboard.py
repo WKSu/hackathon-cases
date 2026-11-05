@@ -112,7 +112,7 @@ def naar_records(df: pd.DataFrame) -> list[dict]:
     return out.to_dict(orient="records")
 
 
-def bouw(pad: Path, peildatum: date, uit: Path) -> Path:
+def bouw(pad: Path, peildatum: date, uit: Path, terug: str | None = None) -> Path:
     df = laad(pad)
     meta = {
         "bron": pad.name,
@@ -121,6 +121,7 @@ def bouw(pad: Path, peildatum: date, uit: Path) -> Path:
         "gebouwd": date.today().isoformat(),
         "dummy": "dummydata" in pad.name.lower(),
         "gewenst_ontbrekend": [k for k in GEWENSTE_KOLOMMEN if k not in df.columns],
+        "terug": terug,
     }
     data = json.dumps(
         {"meta": meta, "rows": naar_records(df)}, ensure_ascii=False, default=str
@@ -148,8 +149,14 @@ def main() -> None:
         default=HIER / "index.html",
         help="uitvoerbestand, standaard index.html naast dit script",
     )
+    p.add_argument(
+        "--terug",
+        help="link terug naar een overzichtspagina, bijv. ../../resultaten.html",
+    )
     args = p.parse_args()
-    uit = bouw(args.export or nieuwste_dummydata(), args.peildatum, args.uit)
+    uit = bouw(
+        args.export or nieuwste_dummydata(), args.peildatum, args.uit, args.terug
+    )
     log.info("Dashboard geschreven: %s", uit)
 
 

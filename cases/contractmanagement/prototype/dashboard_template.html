@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
 <title>Dashboard contractmanagement</title>
 <style>
 :root {
@@ -35,6 +36,8 @@ a { color: var(--series); }
 h1 { font-size: 22px; margin: 0; line-height: 1.2; }
 .badge { font-size: 12px; font-weight: 600; padding: 3px 10px; border-radius: 999px; background: var(--brand-soft); color: var(--brand); border: 1px solid color-mix(in srgb, var(--brand) 35%, transparent); }
 .top .meta { color: var(--ink-2); font-size: 12.5px; }
+.top .meta a { font-weight: 600; margin-right: 10px; text-decoration: none; }
+.top .meta a:hover { text-decoration: underline; }
 .top .spacer { flex: 1; }
 .btn { border: 1px solid var(--border); background: var(--surface); border-radius: 8px; padding: 7px 12px; cursor: pointer; text-decoration: none; color: var(--ink); }
 .btn:hover { background: var(--surface-2); }
@@ -309,7 +312,7 @@ dialog::backdrop { background: rgba(0,0,0,.35); }
     <div>
       <div class="eyebrow">Gemeente Rotterdam · Mobiliteit</div>
       <h1>Dashboard contractmanagement</h1>
-      <div class="meta" id="meta"></div>
+      <div class="meta"><a id="terug" href="#" hidden>← Resultaten themadag</a><span id="meta"></span></div>
     </div>
     <span class="badge" id="badge">Prototype</span>
     <div class="spacer"></div>
@@ -1525,6 +1528,7 @@ function leesHash() {
   if (key === 'persoon' && v.includes(':')) { const [r, ...naam] = v.split(':'); if (ROL[r]) { state.rol = r; state.persoon = naam.join(':'); } }
   return key === 'contract' ? v : key === 'demo' || key === 'bericht' ? '#' + key : null;
 }
+if (META.terug) { const a = $('#terug'); a.href = META.terug; a.hidden = false; }
 const start = leesHash();
 syncFilters();
 render();
