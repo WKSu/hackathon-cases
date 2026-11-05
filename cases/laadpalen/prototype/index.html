@@ -211,7 +211,7 @@ function evalBay(i) {
     if (sw < 1.5 && ach === KI.fietspad) out.push(["no", `Smalle strook (${m1(sw)}) naast fietspad: uitstapstrook`]);
     else if (sw >= P.stoep) out.push(["ok", `Stoep ${m1(sw)}: ${m1(Math.max(sw - 0.8, 0))} doorgang naast de paal`]);
     else if (sw >= P.stoep - 0.3) out.push(["mw", `Stoep ${m1(sw)}: alleen met uitzondering (${m1(Math.max(sw - 0.8, 0))} doorgang)`]);
-    else out.push(["no", `Stoep ${m1(sw)}: te smal (min. ${m1(P.stoep)})`]);
+    else out.push(["mw", `Stoep ${m1(sw)}: te smal voor de stoep. Alleen met uitstulping (kost 1 vak: 3 vakken → 2 laadvakken)`]);
   } else if (k === KI.groen) out.push(["no", "Stoepkant grenst aan groen, niet aan een stoep"]);
   else if (k === KI.fietspad) out.push(["no", "Grenst direct aan fietspad: uitstapstrook"]);
   else if (k === KI.woonerf) out.push(["mw", "Woonerf: geen aparte stoep, maatwerk"]);
@@ -227,12 +227,23 @@ function evalBay(i) {
     else out.push(["no", `Onder de kroon van een grote boom (stam op ${m1(bd)}, kroonstraal ${m1(br)})`]);
   }
 
-  out.push(["na", "Laagspanningskabel binnen 25 m: ter plaatse checken"]);
+  const dl = dLaad(i);
+  if (dl <= 25) out.push(["ok", `Uitbreiding: bestaand laadvak op ${nl(dl)} m, de kabel ligt er waarschijnlijk al`]);
+  else out.push(["na", "Laagspanningskabel binnen 25 m: ter plaatse checken"]);
   out.push(["na", "Geen inrit, nooddeur of deur van een woning ervoor: ter plaatse checken"]);
   const status = out.some(x => x[0] === "no") ? "ongeschikt" : out.some(x => x[0] === "mw") ? "maatwerk" : "kandidaat";
   return { status, items: out };
 }
 const tekort = i => V.n200[i] / P.norm - V.l200[i];
+// afstand paalpunt -> dichtstbijzijnd bestaand laadvak (uitbreiding, D-012)
+const LV = []; for (let i = 0; i < NV; i++) if (V.cat[i] === 1) LV.push(i);
+const dLaadCache = new Map();
+function dLaad(i) {
+  if (dLaadCache.has(i)) return dLaadCache.get(i);
+  const pl = lat(V.paal, i), po = lon(V.paal, i); let m = Infinity;
+  for (const j of LV) { const d = dist(pl, po, lat(V.rp, j), lon(V.rp, j)); if (d < m) m = d; }
+  dLaadCache.set(i, m); return m;
+}
 
 // ---------- kaart ----------
 const map = L.map("map", { preferCanvas: true, zoomControl: true }).setView([51.935, 4.475], 14);
@@ -382,28 +393,37 @@ function render() {
   // beste nieuwe laadlocaties (D-006)
   let pool = inR.filter(x => x.ev.status === "kandidaat"), fromMw = false;
   if (!pool.length) { pool = inR.filter(x => x.ev.status === "maatwerk"); fromMw = true; }
-  pool.forEach(x => x.score = tekort(x.i) + (V.kop[x.i] ? 0.5 : 0) + V.sw[x.i] / 1000);
-  pool.sort((a, b) => b.score - a.score);
-  const pick = [];
-  for (const x of pool) {
-    const pl = lat(V.paal, x.i), po = lon(V.paal, x.i);
-    if (pick.every(p => dist(pl, po, lat(V.paal, p.i), lon(V.paal, p.i)) >= 40)) pick.push(x);
-    if (pick.length === 5) break;
+  // greedy (D-012): na elke keuze tellen de nieuwe laadvakken mee als aanbod binnen 200 m
+  const pick = [], cand = pool.slice();
+  cand.forEach(x => { x.pl = lat(V.paal, x.i); x.po = lon(V.paal, x.i); });
+  while (pick.length < 5 && cand.length) {
+    let best = -1, bs = -Infinity, bx = 0;
+    for (let k = 0; k < cand.length; k++) {
+      const x = cand[k];
+      if (pick.some(p => dist(x.pl, x.po, p.pl, p.po) < 40)) continue;
+      const extra = pick.reduce((s, p) => s + (dist(x.pl, x.po, p.pl, p.po) <= R ? p.nv : 0), 0);
+      const sc = tekort(x.i) - extra + (V.kop[x.i] ? 0.5 : 0) + V.sw[x.i] / 1000;
+      if (sc > bs) { bs = sc; best = k; bx = extra; }
+    }
+    if (best < 0) break;
+    const x = cand.splice(best, 1)[0], pt = V.partner[x.i];
+    x.twee = pt >= 0 && V.cat[pt] === 0 && evalBay(pt).status !== "ongeschikt";
+    x.nv = x.twee ? 2 : 1; x.rest = tekort(x.i) - bx;
+    pick.push(x);
   }
   const ol = document.getElementById("best");
   ol.innerHTML = pick.length ? "" : `<li class="empty" style="display:block">Geen kandidaat of maatwerk binnen 200 m met deze drempels.</li>`;
   pick.forEach((x, n) => {
-    const i = x.i, pl = lat(V.paal, i), po = lon(V.paal, i), pt = V.partner[i];
-    const twee = pt >= 0 && evalBay(pt).status !== "ongeschikt" && V.cat[pt] === 0;
+    const i = x.i, pl = x.pl, po = x.po, pt = V.partner[i], twee = x.twee;
     if (twee) L.polygon(ring(V.poly[pt]), { renderer: canvas, color: "#0b6e69", weight: 2.5, fill: false, interactive: false }).addTo(gSel);
     L.polygon(ring(V.poly[i]), { renderer: canvas, color: "#0b6e69", weight: 2.5, fill: false, interactive: false }).addTo(gSel);
     L.marker([pl, po], { icon: L.divIcon({ className: "", html: `<div class="paal-ico">${n + 1}</div>`, iconSize: [26, 26] }), zIndexOffset: 1000 })
       .on("click", () => popup(i, [pl, po])).addTo(gSel);
     const li = document.createElement("li");
-    const tki = Math.max(0, tekort(i));
+    const tki = Math.max(0, x.rest), ub = dLaad(i) <= 25;
     li.innerHTML = `<span class="badge">${n + 1}</span><div><div class="t" id="addr${n}">Locatie ${n + 1}</div>
-      <div class="d">Stoep ${m1(V.sw[i] / 10)} · ${twee ? "2 laadvakken" : "1 laadvak"} · ${nl(x.d)} m van het adres${V.kop[i] ? " · eind van de rij" : ""}</div>
-      <div class="d">Tekort binnen 200 m: ${nl(Math.round(tki))} laadvakken (${nl(V.l200[i])} bestaand bij ${nl(V.n200[i])} vakken)</div></div>`;
+      <div class="d">${ub ? "<b>Uitbreiding bestaande locatie</b> · " : ""}Stoep ${m1(V.sw[i] / 10)} · ${twee ? "2 laadvakken" : "1 laadvak"} · ${nl(x.d)} m van het adres${V.kop[i] ? " · eind van de rij" : ""}</div>
+      <div class="d">Tekort binnen 200 m${n ? ", na de locaties hierboven" : ""}: ${nl(Math.round(tki))} laadvakken (${nl(V.l200[i])} bestaand bij ${nl(V.n200[i])} vakken)</div></div>`;
     li.onclick = () => { map.flyTo([pl, po], 19, { duration: 0.5 }); popup(i, [pl, po]); };
     ol.appendChild(li);
     reverse(pl, po).then(t => { const el = document.getElementById("addr" + n); if (t && el) el.textContent = `${n + 1}. Bij ${t}`; });

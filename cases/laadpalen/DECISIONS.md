@@ -99,3 +99,19 @@ Dit log wordt alleen aangevuld. Een oud besluit pas je niet aan: je vervangt het
 - **Decision:** per CBS-vierkant van 100 m: bestaande laadvakken binnen 200 m gedeeld door (openbare vakken binnen 200 m / norm). Er zijn zes klassen, van < 20% tot ≥ norm. Na het kiezen van een adres wordt de laag bijna doorzichtig, zodat de straat zichtbaar blijft.
 - **Why:** de mediane dekking in Noord is 3,3% laadvakken tegenover 10% norm. Met het absolute tekort viel bijna alles in de hoogste klasse en was de kaart één kleur. De verhouding laat wél zien waar het tekort het grootst is.
 - **Rejected alternative:** klassen op kwantielen. Die verschuiven bij elke andere norm en zijn lastig uit te leggen.
+
+## D-011: Te smalle stoep = maatwerk (uitstulping), niet ongeschikt
+- **Status:** proposed (vervangt de rij "Stoepbreedte" in D-004 voor stoepen < 1,7 m)
+- **When / who:** 2026-11-05 14:05 · Claude
+- **Decision:** een vak met een stoep smaller dan de maatwerkgrens krijgt "maatwerk: alleen met uitstulping (kost 1 vak: 3 vakken → 2 laadvakken)".
+- **Why:** de beleidsregel staat uitstulping toe bij onvoldoende ruimte op het trottoir. In Noord viel 35% van de ongeschikte vakken (1.824) alleen af op stoepbreedte. Juist in oude wijken is uitstulping vaak de enige route.
+- **Rejected alternative:** ongeschikt laten. Dan schrijft de tool de plekken af waar het team het meest moet zoeken.
+
+## D-012: Greedy ranking zonder dubbeltelling, en een label voor uitbreiding van bestaande locaties
+- **Status:** proposed (vervangt de rangschikking in D-006)
+- **When / who:** 2026-11-05 14:05 · Claude
+- **Decision:**
+  - **Rangschikking:** de beste nieuwe laadlocaties worden één voor één gekozen. Na elke keuze tellen de nieuwe laadvakken (1 of 2) mee als aanbod voor de vakken binnen 200 m, en daarna wordt opnieuw gerangschikt.
+  - **Uitbreiding:** een paalpunt binnen 25 m van een bestaand laadvak krijgt het label "uitbreiding bestaande locatie". De kabelregel geldt dan als waarschijnlijk vervuld.
+- **Why:** in de oude ranking overlapten de 200 m-cirkels van de top 5 voor 70%. Daardoor werd hetzelfde tekort vijf keer geteld. 25% van de kandidaat-paalpunten ligt binnen 25 m van een bestaand laadvak, en de beleidsregel noemt uitbreiding van bestaande laadlocaties als optie.
+- **Rejected alternative:** uitbreiding automatisch voorrang geven. Zonder bezettingsdata weten we niet of de bestaande paal vol is (parking lot).
