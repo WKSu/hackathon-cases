@@ -1,0 +1,1536 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dashboard contractmanagement</title>
+<style>
+:root {
+  color-scheme: light;
+  --page: #f4f4f1; --surface: #ffffff; --surface-2: #f0efec;
+  --ink: #0b0b0b; --ink-2: #52514e; --muted: #77756f;
+  --grid: #e1e0d9; --axis: #c3c2b7; --border: rgba(11,11,11,.12);
+  --brand: #00811f; --brand-soft: #e3f2e6;
+  --good: #0ca30c; --warn: #fab219; --crit: #d03b3b; --nodata: #b5b3ad;
+  --lamp-off: #3a3c40; --housing: #1d1f22;
+  --series: #2a78d6; --series-soft: #dcebfd;
+  --board: #121417; --board-ink: #f5c542; --board-ink-2: #e8e6df; --board-line: #2a2d32;
+  --shadow: 0 1px 2px rgba(0,0,0,.05), 0 6px 20px rgba(0,0,0,.05);
+  --radius: 12px;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { margin: 0; }
+body { background: var(--page); color: var(--ink); font: 14px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif; }
+button, input, select, textarea { font: inherit; color: inherit; }
+a { color: var(--series); }
+.wrap { max-width: 1280px; margin: 0 auto; padding: 0 16px; }
+.fout { background: #fde8e8; color: #8a1c1c; padding: 10px 12px; border-radius: 8px; }
+
+/* Header */
+.top { background: var(--surface); border-bottom: 1px solid var(--border); }
+.top .wrap { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; padding-top: 14px; padding-bottom: 14px; }
+.brandmark { width: 8px; align-self: stretch; background: var(--brand); border-radius: 4px; }
+.eyebrow { font-size: 12px; letter-spacing: .04em; text-transform: uppercase; color: var(--brand); font-weight: 600; }
+h1 { font-size: 22px; margin: 0; line-height: 1.2; }
+.badge { font-size: 12px; font-weight: 600; padding: 3px 10px; border-radius: 999px; background: var(--brand-soft); color: var(--brand); border: 1px solid color-mix(in srgb, var(--brand) 35%, transparent); }
+.top .meta { color: var(--ink-2); font-size: 12.5px; }
+.top .spacer { flex: 1; }
+.btn { border: 1px solid var(--border); background: var(--surface); border-radius: 8px; padding: 7px 12px; cursor: pointer; text-decoration: none; color: var(--ink); }
+.btn:hover { background: var(--surface-2); }
+.btn.primary { background: var(--brand); border-color: var(--brand); color: #fff; }
+.btn.primary:hover { filter: brightness(1.08); }
+
+/* Filters */
+.filters { background: var(--surface); border-bottom: 1px solid var(--border); }
+.filters .wrap { display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: center; padding-top: 10px; padding-bottom: 10px; }
+.filters-meer { border-top: 1px solid var(--grid); }
+.field { display: flex; align-items: center; gap: 6px; color: var(--ink-2); font-size: 13px; }
+.field select, .field input[type=date], .field input[type=search] { border: 1px solid var(--border); border-radius: 8px; padding: 6px 8px; background: var(--surface); color: var(--ink); }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { border: 1px solid var(--border); background: var(--surface); border-radius: 999px; padding: 4px 11px; font-size: 12.5px; cursor: pointer; }
+.chip[aria-pressed="true"] { background: var(--ink); color: var(--surface); border-color: var(--ink); }
+.rolhint { color: var(--ink-2); font-size: 12.5px; }
+
+/* Tabs */
+.tabs { display: flex; gap: 4px; overflow-x: auto; padding-top: 14px; }
+.tab { border: 0; background: transparent; padding: 9px 14px; border-radius: 8px 8px 0 0; cursor: pointer; color: var(--ink-2); font-weight: 600; border-bottom: 3px solid transparent; white-space: nowrap; }
+.tab[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--brand); }
+.tab .n { font-weight: 600; color: #fff; background: var(--crit); border-radius: 999px; padding: 0 7px; font-size: 11.5px; margin-left: 4px; }
+.tab .n.grijs { background: var(--surface-2); color: var(--ink-2); }
+main { padding: 16px 0 48px; }
+.scope { color: var(--ink-2); margin: 0 0 12px; font-size: 13px; }
+.scope b { color: var(--ink); }
+
+/* Cards & grid */
+.grid { display: grid; gap: 16px; }
+.g4 { grid-template-columns: repeat(4, minmax(0,1fr)); }
+.g75 { grid-template-columns: minmax(0,7fr) minmax(0,5fr); }
+.g2 { grid-template-columns: repeat(2, minmax(0,1fr)); }
+@media (max-width: 980px) { .g4 { grid-template-columns: repeat(2, minmax(0,1fr)); } .g75, .g2 { grid-template-columns: 1fr; } }
+@media (max-width: 560px) { .g4 { grid-template-columns: 1fr; } }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 18px; box-shadow: var(--shadow); min-width: 0; }
+.card h2 { font-size: 15px; margin: 0 0 4px; }
+.card .lead { color: var(--ink-2); font-size: 12.5px; margin: 0 0 12px; }
+.mt16 { margin-top: 16px; }
+.note { color: var(--muted); font-size: 12px; margin: 10px 0 0; }
+.muted { color: var(--muted); }
+.laat { color: var(--crit) !important; font-weight: 600; }
+
+/* Intro */
+.intro { display: flex; gap: 16px; align-items: flex-start; justify-content: space-between; border-left: 4px solid var(--brand); margin-bottom: 16px; }
+.intro ol { margin: 6px 0 0; padding-left: 20px; display: grid; gap: 3px; font-size: 13.5px; }
+
+/* Headline + tiles */
+.headline { font-size: 17px; margin: 0 0 14px; max-width: 1000px; }
+.headline .link { font-size: 17px; }
+.tile { display: flex; flex-direction: column; gap: 2px; }
+button.tile { text-align: left; cursor: pointer; font: inherit; color: inherit; width: 100%; }
+button.tile:hover { border-color: var(--axis); }
+button.tile[aria-expanded="true"] { border-color: var(--ink); box-shadow: inset 0 0 0 1px var(--ink); }
+.tile-head { display: flex; justify-content: space-between; align-items: flex-start; }
+.tile .h3 { margin: 0; font-size: 13px; text-transform: uppercase; letter-spacing: .05em; color: var(--ink-2); }
+.tile .big { font-size: 34px; font-weight: 700; line-height: 1.1; margin-top: 2px; }
+.tile .sub { color: var(--ink); font-size: 13px; }
+.tile .sub2 { color: var(--ink-2); font-size: 12.5px; margin-top: 2px; }
+.tile .meer { margin-top: auto; padding-top: 10px; color: var(--series); font-weight: 600; font-size: 13px; }
+.vri-wrap { display: inline-flex; align-items: center; gap: 8px; }
+.vri { display: inline-flex; flex-direction: column; gap: 4px; background: var(--housing); padding: 5px; border-radius: 9px; }
+.vri i { width: 13px; height: 13px; border-radius: 50%; background: var(--lamp-off); display: block; }
+.vri i.r.on { background: var(--crit); box-shadow: 0 0 9px var(--crit); }
+.vri i.y.on { background: var(--warn); box-shadow: 0 0 9px var(--warn); }
+.vri i.g.on { background: var(--good); box-shadow: 0 0 9px var(--good); }
+.vri-label { font-size: 12px; font-weight: 600; color: var(--ink-2); }
+.dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; vertical-align: -1px; margin-right: 6px; background: var(--nodata); }
+.dot.rood { background: var(--crit); } .dot.geel { background: var(--warn); } .dot.groen { background: var(--good); } .dot.inactief { background: transparent; border: 2px solid var(--nodata); }
+.pill { display: inline-block; font-size: 10.5px; font-weight: 700; letter-spacing: .04em; padding: 1px 6px; border-radius: 4px; text-transform: uppercase; vertical-align: 1px; white-space: nowrap; }
+.pill.rood { background: var(--crit); color: #fff; } .pill.geel { background: var(--warn); color: #0b0b0b; } .pill.info { background: var(--surface-2); color: var(--ink-2); border: 1px solid var(--border); } .pill.groen { background: var(--good); color: #fff; } .pill.blauw { background: var(--series-soft); color: #1c5cab; }
+.link { border: 0; background: none; color: var(--series); padding: 0; cursor: pointer; font-weight: 600; font-size: 13px; text-align: left; }
+.link:hover { text-decoration: underline; }
+.panel h2 { font-size: 16px; margin-bottom: 10px; }
+.h3s { font-size: 12px; margin: 0 0 8px; color: var(--ink-2); text-transform: uppercase; letter-spacing: .05em; }
+
+/* Lists */
+.summary { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+.summary li { display: grid; grid-template-columns: 56px 1fr auto; gap: 10px; align-items: baseline; }
+.advies { margin: 14px 0 0; padding: 12px 14px; background: var(--surface-2); border-radius: 10px; }
+.advies h3 { margin: 0 0 6px; font-size: 13px; }
+.advies ol { margin: 0; padding-left: 20px; display: grid; gap: 4px; }
+.bron { color: var(--muted); font-size: 12px; margin: 12px 0 0; }
+.acties { list-style: none; margin: 8px 0 0; padding: 0; }
+.acties li { padding: 9px 0; border-top: 1px solid var(--grid); cursor: pointer; display: grid; grid-template-columns: 18px 1fr; gap: 3px 6px; }
+.acties li:hover .t { text-decoration: underline; }
+.acties .t { font-weight: 600; }
+.acties .s { grid-column: 2; color: var(--ink-2); font-size: 12.5px; }
+
+/* Departure board */
+.board { background: var(--board); color: var(--board-ink-2); border-radius: var(--radius); padding: 14px 16px; box-shadow: var(--shadow); min-width: 0; }
+.board h2 { color: var(--board-ink); font-size: 15px; margin: 0 0 2px; letter-spacing: .02em; }
+.board .lead { color: #9a9a92; font-size: 12px; margin: 0 0 8px; }
+.board table { width: 100%; border-collapse: collapse; font-family: ui-monospace, "Cascadia Mono", Consolas, monospace; font-size: 12.5px; }
+.board th { text-align: left; color: #9a9a92; font-weight: 500; font-size: 11px; text-transform: uppercase; letter-spacing: .06em; padding: 4px 6px; border-bottom: 1px solid var(--board-line); }
+.board td { padding: 7px 6px; border-bottom: 1px solid var(--board-line); vertical-align: top; }
+.board tr[data-nr], .board tr[data-goto] { cursor: pointer; }
+.board tr[data-nr]:hover td, .board tr[data-goto]:hover td { background: #1c1f24; }
+.board .t { color: var(--board-ink); font-weight: 700; white-space: nowrap; }
+.board .naam { color: #fff; }
+.board .naam small { display: block; color: #8d8d86; font-size: 11px; }
+.board .opm { white-space: nowrap; font-weight: 700; }
+.board .opm.rood { color: #ff6b6b; } .board .opm.geel { color: var(--board-ink); } .board .opm.groen { color: #5ad15a; }
+.board .blink { animation: blink 1.2s steps(2, start) infinite; }
+@keyframes blink { to { visibility: hidden; } }
+@media (prefers-reduced-motion: reduce) { .board .blink { animation: none; } }
+
+/* Chart */
+.legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: 12px; color: var(--ink-2); margin: 0 0 6px; }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.legend i { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
+svg text { fill: var(--muted); font-size: 11px; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; }
+svg .gridline { stroke: var(--grid); stroke-width: 1; }
+svg .baseline { stroke: var(--axis); stroke-width: 1; }
+svg .marker { stroke: var(--ink-2); stroke-width: 1.5; stroke-dasharray: 4 3; }
+svg .marker-label { fill: var(--ink-2); font-weight: 600; }
+svg .hit { fill: transparent; }
+svg .hit:hover { fill: color-mix(in srgb, var(--ink) 6%, transparent); }
+.tip { position: fixed; z-index: 50; pointer-events: none; background: var(--ink); color: var(--surface); padding: 8px 10px; border-radius: 8px; font-size: 12px; white-space: pre-line; max-width: 340px; box-shadow: 0 6px 20px rgba(0,0,0,.2); }
+
+/* Missing data */
+.mist { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+.mist li { display: grid; grid-template-columns: 16px 1fr; gap: 8px; font-size: 13px; }
+.mist .k { font-weight: 600; }
+.mist .u { color: var(--ink-2); font-size: 12.5px; }
+.mist .ico { color: var(--muted); font-weight: 700; }
+
+/* Tables */
+.tbl { width: 100%; border-collapse: collapse; font-size: 13px; }
+.tbl th { text-align: left; font-size: 12px; color: var(--ink-2); font-weight: 600; padding: 8px; border-bottom: 1px solid var(--axis); white-space: nowrap; position: sticky; top: 0; background: var(--surface); }
+.tbl th[data-sort] { cursor: pointer; }
+.tbl th[data-sort]:hover { color: var(--ink); }
+.tbl td { padding: 8px; border-bottom: 1px solid var(--grid); vertical-align: top; }
+.tbl tbody tr { cursor: pointer; }
+.tbl tbody tr:hover td { background: var(--surface-2); }
+.tbl .num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.tbl small { display: block; color: var(--muted); font-size: 11.5px; }
+.tbl-scroll { overflow: auto; max-height: 68vh; border-radius: 8px; }
+.tbl.compact .opt { display: none; }
+.toolbar { display: flex; flex-wrap: wrap; gap: 10px 14px; align-items: center; margin-bottom: 12px; }
+.toolbar .count { color: var(--ink-2); font-size: 13px; margin-left: auto; }
+.inbar { display: flex; align-items: center; gap: 8px; }
+.inbar .b { height: 10px; background: var(--series); border-radius: 0 4px 4px 0; min-width: 2px; }
+.tbar { display: grid; grid-template-columns: minmax(120px, 190px) minmax(0, 1fr) 84px; gap: 8px; align-items: center; margin: 7px 0; cursor: pointer; font-size: 13px; }
+.tbar:hover .tl { text-decoration: underline; }
+.tbar .b { display: block; height: 10px; background: var(--series); border-radius: 0 4px 4px 0; min-width: 2px; }
+.tbar .num { text-align: right; font-variant-numeric: tabular-nums; }
+
+/* Action list */
+.grp { font-size: 14px; margin: 20px 0 4px; display: flex; gap: 6px; align-items: baseline; }
+.grp.eerste { margin-top: 4px; }
+.grp.telaat { color: var(--crit); }
+.grp span { color: var(--muted); font-weight: 500; }
+select.stat { border: 1px solid var(--border); border-radius: 6px; padding: 3px 6px; background: var(--surface); font-size: 12.5px; cursor: pointer; }
+select.stat.bezig { background: var(--series-soft); }
+select.stat.klaar { background: color-mix(in srgb, var(--good) 18%, var(--surface)); }
+.acties-tbl td:first-child { width: 58px; }
+.acties-tbl td:nth-child(3) { width: 170px; }
+.acties-tbl td:nth-child(4) { width: 150px; }
+.acties-tbl td:nth-child(5) { width: 110px; }
+
+/* Theme cards */
+.kansen { display: grid; gap: 10px; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
+.kans { border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; background: var(--surface); }
+.kans h3 { margin: 0 0 4px; font-size: 13.5px; }
+.kans p { margin: 0 0 6px; font-size: 12.5px; color: var(--ink-2); }
+.kans ul { margin: 0; padding-left: 16px; font-size: 12.5px; }
+.kans li { cursor: pointer; }
+.kans li:hover { text-decoration: underline; }
+
+/* Workload */
+.seg { display: inline-flex; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+.seg button { border: 0; background: var(--surface); padding: 6px 12px; cursor: pointer; }
+.seg button[aria-pressed="true"] { background: var(--ink); color: var(--surface); }
+.cap { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 12px; padding: 12px 14px; background: var(--surface-2); border-radius: 10px; margin-bottom: 8px; }
+.cap .k { display: block; color: var(--muted); font-size: 11.5px; text-transform: uppercase; letter-spacing: .04em; }
+.cap b { font-size: 22px; }
+@media (max-width: 760px) { .cap { grid-template-columns: repeat(2, minmax(0,1fr)); } }
+.werk { display: grid; grid-template-columns: minmax(130px, 190px) minmax(0, 1fr) minmax(260px, 340px) 80px; gap: 6px 12px; align-items: center; font-size: 13px; margin-top: 14px; }
+.werk .h { font-size: 12px; color: var(--ink-2); font-weight: 600; border-bottom: 1px solid var(--axis); padding-bottom: 6px; }
+.werk .nm { cursor: pointer; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.werk .nm:hover { text-decoration: underline; }
+.werk .track { position: relative; height: 18px; }
+.werk .bar { position: absolute; left: 0; top: 4px; height: 10px; background: var(--series); border-radius: 0 4px 4px 0; }
+.werk .bar.over { background: var(--crit); }
+.werk .bar.leeg { background: repeating-linear-gradient(135deg, var(--nodata) 0 3px, transparent 3px 6px); border: 1px solid var(--nodata); }
+.werk .norm { position: absolute; top: -2px; bottom: -2px; width: 0; border-left: 2px dashed var(--ink-2); }
+.werk .info { color: var(--ink-2); font-size: 12.5px; }
+.werk .info b { color: var(--ink); }
+.werk label { font-size: 12.5px; color: var(--ink-2); display: inline-flex; gap: 5px; align-items: center; cursor: pointer; }
+.werk-legend { display: flex; gap: 16px; flex-wrap: wrap; font-size: 12px; color: var(--ink-2); margin: 10px 0 0; }
+.werk-legend i { display: inline-block; width: 14px; height: 0; border-top: 2px dashed var(--ink-2); vertical-align: middle; margin-right: 6px; }
+
+/* Drawer */
+.scrim { position: fixed; inset: 0; background: rgba(0,0,0,.35); z-index: 30; }
+.drawer { position: fixed; top: 0; right: 0; bottom: 0; width: min(640px, 100vw); background: var(--surface); z-index: 40; box-shadow: -10px 0 30px rgba(0,0,0,.18); transform: translateX(105%); transition: transform .2s ease; overflow-y: auto; }
+.drawer.open { transform: none; }
+.drawer-inner { padding: 20px 22px 40px; }
+.drawer h2 { margin: 2px 0 4px; font-size: 20px; }
+.drawer h3 { font-size: 13px; text-transform: uppercase; letter-spacing: .05em; color: var(--ink-2); margin: 22px 0 8px; }
+.drawer .close { position: sticky; top: 0; float: right; }
+.kv { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 10px 16px; margin-top: 14px; }
+.kv div { font-size: 13px; }
+.kv .k { display: block; color: var(--muted); font-size: 11.5px; text-transform: uppercase; letter-spacing: .04em; }
+.rollen { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 8px; }
+@media (max-width: 520px) { .rollen { grid-template-columns: 1fr; } }
+.rol { border: 1px solid var(--border); border-radius: 10px; padding: 10px; font-size: 13px; }
+.rol span { display: block; color: var(--muted); font-size: 11.5px; }
+.rol.leeg { border: 2px dashed var(--crit); color: var(--crit); font-weight: 600; }
+.rol .tag { display: inline-block; margin-top: 6px; font-size: 11px; background: var(--surface-2); border-radius: 4px; padding: 1px 6px; color: var(--ink-2); }
+.acts { list-style: none; padding: 0; margin: 0; display: grid; gap: 12px; }
+.acts li { display: grid; grid-template-columns: 52px 1fr; gap: 8px; font-size: 13px; align-items: start; }
+.acts li.klaar { opacity: .55; }
+.acts li.klaar b { text-decoration: line-through; }
+.acts .pill { justify-self: start; }
+.acts .w { color: var(--ink-2); font-size: 12.5px; }
+.acts .ctl, .ctl-row { display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: center; margin-top: 6px; font-size: 12.5px; color: var(--ink-2); }
+.acts select, .ctl-row select, .ctl-row input[type=date] { border: 1px solid var(--border); border-radius: 6px; padding: 3px 6px; background: var(--surface); font-size: 12.5px; }
+.acts .bronlink { font-size: 12px; }
+.chg { font-weight: 700; color: var(--ink); background: color-mix(in srgb, var(--warn) 22%, transparent); }
+.tram text { font-size: 11px; }
+.tram .lbl { fill: var(--ink-2); }
+.tram .lbl-b { fill: var(--ink); font-weight: 600; }
+
+/* Details */
+details.more > summary { cursor: pointer; list-style: none; display: flex; align-items: center; gap: 8px; font-size: 15px; }
+details.more > summary::-webkit-details-marker { display: none; }
+details.more > summary::before { content: "\25B8"; color: var(--muted); transition: transform .15s; }
+details.more[open] > summary::before { transform: rotate(90deg); }
+details.more[open] > summary { margin-bottom: 12px; }
+.drawer details.more { margin-top: 24px; border-top: 1px solid var(--grid); padding-top: 14px; }
+.drawer details.more > summary { color: var(--series); font-weight: 600; font-size: 14px; }
+
+/* Dialogs */
+dialog { border: 1px solid var(--border); border-radius: 14px; padding: 0; background: var(--surface); color: var(--ink); width: min(660px, calc(100vw - 32px)); }
+dialog::backdrop { background: rgba(0,0,0,.35); }
+.dlg { padding: 18px 20px; }
+.dlg h2 { margin: 0 0 4px; font-size: 17px; }
+.dlg .rows { display: grid; gap: 10px; margin: 14px 0; }
+.dlg .row { display: grid; grid-template-columns: 1fr 110px; gap: 10px; align-items: center; }
+.dlg .row small { display: block; color: var(--muted); }
+.dlg input[type=number] { border: 1px solid var(--border); border-radius: 8px; padding: 6px 8px; width: 100%; background: var(--surface); }
+.dlg textarea { width: 100%; min-height: 360px; border: 1px solid var(--border); border-radius: 8px; padding: 10px; font: 12.5px/1.5 ui-monospace, Consolas, monospace; background: var(--surface-2); }
+.dlg .btns { display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap; }
+
+/* Uitleg */
+.flow { display: flex; flex-wrap: wrap; gap: 8px; align-items: stretch; margin: 6px 0 4px; }
+.flow .stap { flex: 1 1 150px; border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; background: var(--surface-2); font-size: 12.5px; }
+.flow .stap b { display: block; font-size: 13px; margin-bottom: 2px; }
+.flow .pijl { align-self: center; color: var(--muted); font-size: 18px; }
+.regels td:first-child { white-space: nowrap; font-weight: 600; }
+.regels tbody tr { cursor: default; }
+.prose p, .prose li { font-size: 13.5px; }
+.prose h3 { font-size: 14px; margin: 20px 0 6px; }
+
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+@media print {
+  body { background: #fff; font-size: 11px; }
+  .filters, .tabs, .top .btn, .drawer, .scrim, .tip, .intro, .link[data-goto], .link[data-tab-go], .tile .meer { display: none !important; }
+  .link { color: inherit; font-weight: 600; }
+  .card, .board { box-shadow: none; break-inside: avoid; }
+  .tbl-scroll { max-height: none; overflow: visible; }
+  .g4 { grid-template-columns: repeat(4, 1fr); }
+  .g75 { grid-template-columns: 7fr 5fr; }
+  select.stat { border: 0; appearance: none; background: none; padding: 0; }
+}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <div class="brandmark" aria-hidden="true"></div>
+    <div>
+      <div class="eyebrow">Gemeente Rotterdam · Mobiliteit</div>
+      <h1>Dashboard contractmanagement</h1>
+      <div class="meta" id="meta"></div>
+    </div>
+    <span class="badge" id="badge">Prototype</span>
+    <div class="spacer"></div>
+    <button class="btn" id="btn-bericht" type="button">Maandbericht</button>
+    <button class="btn primary" id="btn-print" type="button">Print / PDF</button>
+  </div>
+</header>
+
+<section class="filters" aria-label="Filters">
+  <div class="wrap">
+    <label class="field">Bekijk als
+      <select id="f-rol">
+        <option value="mt">MT / hele afdeling</option>
+        <option value="ce">Contracteigenaar</option>
+        <option value="cm">Contractmanager</option>
+        <option value="cb">Contractbeheerder</option>
+      </select>
+    </label>
+    <label class="field" id="f-persoon-wrap"><span class="sr">Persoon</span>
+      <select id="f-persoon"></select>
+    </label>
+    <span class="rolhint" id="rolhint"></span>
+    <button class="btn" id="btn-filters" type="button" aria-expanded="false" aria-controls="filters-meer">Meer filters</button>
+  </div>
+  <div class="wrap filters-meer" id="filters-meer" hidden>
+    <div class="chips" id="f-themas" role="group" aria-label="Thema's"></div>
+    <label class="field">Peildatum <input type="date" id="f-peil"></label>
+    <label class="field"><input type="checkbox" id="f-inactief"> ook inactieve contracten</label>
+    <button class="btn" id="btn-normen" type="button">Normen aanpassen</button>
+  </div>
+</section>
+
+<div class="wrap">
+  <nav class="tabs" role="tablist" id="tabs">
+    <button class="tab" role="tab" data-tab="overzicht">Overzicht</button>
+    <button class="tab" role="tab" data-tab="acties">Acties <span class="n" id="n-acties"></span></button>
+    <button class="tab" role="tab" data-tab="contracten">Contracten <span class="n grijs" id="n-contracten"></span></button>
+    <button class="tab" role="tab" data-tab="thema">Per thema</button>
+    <button class="tab" role="tab" data-tab="werk">Werkverdeling</button>
+    <button class="tab" role="tab" data-tab="hoe">Uitleg</button>
+  </nav>
+  <main id="main"></main>
+</div>
+
+<div id="tip" class="tip" hidden></div>
+<div id="scrim" class="scrim" hidden></div>
+<aside id="drawer" class="drawer" aria-label="Contractdetails"><div class="drawer-inner" id="drawer-inner"></div></aside>
+
+<dialog id="dlg-normen">
+  <form method="dialog" class="dlg">
+    <h2>Normen en termijnen</h2>
+    <p class="muted">Stel in wat jullie ideaal vinden. Het dashboard rekent direct opnieuw. De instellingen worden alleen in deze browser bewaard.</p>
+    <div class="rows" id="normen-rows"></div>
+    <div class="btns">
+      <button class="btn" value="reset" type="submit">Standaardwaarden</button>
+      <button class="btn" value="cancel" type="submit">Annuleren</button>
+      <button class="btn primary" value="ok" type="submit">Toepassen</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="dlg-bericht">
+  <div class="dlg">
+    <h2>Maandbericht</h2>
+    <p class="muted" id="bericht-sub"></p>
+    <textarea id="bericht-tekst" readonly></textarea>
+    <div class="btns" style="margin-top:12px">
+      <button class="btn" id="bericht-kopie" type="button">Kopieer tekst</button>
+      <a class="btn" id="bericht-mail" href="#">Open in e-mail</a>
+      <button class="btn primary" id="bericht-sluit" type="button">Sluiten</button>
+    </div>
+  </div>
+</dialog>
+
+<script id="data" type="application/json">__DATA__</script>
+<script>
+'use strict';
+addEventListener('error', e => {
+  const m = document.getElementById('main');
+  if (m) m.insertAdjacentHTML('afterbegin', `<p class="fout">Er ging iets mis: ${String(e.message).replace(/[<&]/g, '')}</p>`);
+});
+
+/* ======================= Data & helpers ======================= */
+const D = JSON.parse(document.getElementById('data').textContent);
+const META = D.meta;
+const $ = (s, el = document) => el.querySelector(s);
+const $$ = (s, el = document) => [...el.querySelectorAll(s)];
+const esc = s => String(s ?? '').replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
+const store = {
+  get(k, d) { try { const v = localStorage.getItem('cmdash:' + k); return v ? JSON.parse(v) : d; } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem('cmdash:' + k, JSON.stringify(v)); } catch (e) { /* opslag niet beschikbaar */ } },
+};
+
+const DAG = 864e5;
+function parseDate(s) { if (!s) return null; const [y, m, d] = String(s).slice(0, 10).split('-').map(Number); return new Date(y, m - 1, d); }
+const mndTussen = (a, b) => (b - a) / (DAG * 30.4375);
+function addMnd(d, n) { const x = new Date(d); x.setMonth(x.getMonth() + n); return x; }
+const eindMaand = d => new Date(d.getFullYear(), d.getMonth() + 1, 0);
+const isoDate = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+const fmtD = d => d ? d.toLocaleDateString('nl-NL', { day: 'numeric', month: 'short', year: 'numeric' }) : '—';
+const fmtDkort = d => d ? d.toLocaleDateString('nl-NL', { day: '2-digit', month: '2-digit', year: '2-digit' }) : '--';
+const NF0 = new Intl.NumberFormat('nl-NL', { maximumFractionDigits: 0 });
+const NF1 = new Intl.NumberFormat('nl-NL', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+const NFj = new Intl.NumberFormat('nl-NL', { maximumFractionDigits: 1 });
+function eur(v) {
+  if (v == null || isNaN(v)) return '—';
+  const a = Math.abs(v);
+  if (a >= 1e9) return '€ ' + NF1.format(v / 1e9) + ' mld';
+  if (a >= 1e6) return '€ ' + NF1.format(v / 1e6) + ' mln';
+  if (a >= 1e4) return '€ ' + NF0.format(v / 1e3) + 'k';
+  return '€ ' + NF0.format(v);
+}
+const eurVol = v => (v == null || isNaN(v)) ? '—' : '€ ' + NF0.format(v);
+function fmtMnd(m) { if (m < 1) return 'minder dan een maand'; if (m < 24) return Math.round(m) + ' mnd'; return NFj.format(m / 12) + ' jaar'; }
+const sum = (a, f) => a.reduce((s, x) => s + (f(x) || 0), 0);
+const pct = (a, b) => b ? Math.round(a / b * 100) : 0;
+function groupBy(a, f) { const m = new Map(); for (const x of a) { const k = f(x); if (!m.has(k)) m.set(k, []); m.get(k).push(x); } return m; }
+const mv = n => n === 1 ? 'contract' : 'contracten';
+const mvA = n => n === 1 ? 'actie' : 'acties';
+const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+
+/* ======================= Vaste begrippen ======================= */
+const ROL = { ce: 'Contracteigenaar', cm: 'Contractmanager', cb: 'Contractbeheerder' };
+const ROLMV = { ce: 'contracteigenaren', cm: 'contractmanagers', cb: 'contractbeheerders' };
+const ROLTAAK = {
+  mt: 'Je ziet de hele afdeling en de grootste risico\'s.',
+  ce: 'Jij besluit: verlengen of niet, en wie welke rol krijgt.',
+  cm: 'Jij bereidt voor: aanbestedingen, verlengingen en toetsingen.',
+  cb: 'Jij houdt de administratie op orde: status, data en versies.',
+};
+const NORM0 = { signaalMnd: 18, doorloopEU: 18, doorloopNat: 6, drempel: 216000, besluitMnd: 3, normCM: 20, normCB: 30, maxLooptijdMnd: 48, wijzigGrens: 10, roodAandeel: 20 };
+const NORM_LABEL = {
+  signaalMnd: ['Vooruitkijken: contracten die aflopen binnen (maanden)', 'Afspraak van het team: 1,5 jaar'],
+  doorloopEU: ['Doorlooptijd Europese aanbesteding (maanden)', 'Uiterste start = einddatum min deze termijn'],
+  doorloopNat: ['Doorlooptijd onder de Europese drempel (maanden)', 'Nationaal of meervoudig onderhands'],
+  drempel: ['Europese drempel leveringen en diensten (€)', 'Contractwaarde geldt als schatting. Check de actuele drempel op pianoo.nl'],
+  besluitMnd: ['Verlengingsbesluit uiterlijk (maanden vóór einde)', 'Opzegtermijn staat niet in de export'],
+  normCM: ['Max. actieve contracten per contractmanager', 'Ideale werkverdeling; basis voor de capaciteitsberekening'],
+  normCB: ['Max. actieve contracten per contractbeheerder', 'Ideale werkverdeling'],
+  maxLooptijdMnd: ['Max. looptijd raamovereenkomst (maanden)', 'Aw 2012 art. 2.140: 4 jaar, tenzij gemotiveerd'],
+  wijzigGrens: ['Signaal bij waardestijging t.o.v. versie 1 (%)', 'Aw 2012 art. 2.163b: 10% leveringen/diensten, 15% werken'],
+  roodAandeel: ['Stoplicht totaal rood vanaf (% contracten rood)', 'Hoe streng het overzicht is'],
+};
+const AW = { label: 'Aanbestedingswet 2012', url: 'https://wetten.overheid.nl/BWBR0032203' };
+const BW = { label: 'Burgerlijk Wetboek boek 6', url: 'https://wetten.overheid.nl/BWBR0005289' };
+const PLAN = {
+  onbekend: 'Nog niets vastgelegd',
+  optie: 'Verlengingsoptie aanwezig, nog geen besluit',
+  geenoptie: 'Geen verlengingsoptie, nog geen plan',
+  verlengen: 'Besloten: verlengen',
+  aanbesteding: '(Her)aanbesteding loopt',
+  beeindigen: 'Besloten: laten aflopen',
+};
+const PLAN_VAST = ['verlengen', 'aanbesteding', 'beeindigen'];
+const STATUS = { open: 'Open', bezig: 'Opgepakt', klaar: 'Klaar' };
+const OORDEEL = { '': 'Nog niet beoordeeld', goed: 'Goed', aandacht: 'Vraagt aandacht', onvoldoende: 'Onvoldoende' };
+const SOORT = { tijd: 'Tijd', geld: 'Geld', kwaliteit: 'Kwaliteit', rollen: 'Rollen', wet: 'Wet- en regelgeving', data: 'Datakwaliteit' };
+const BUCKETS = { telaat: 'Te laat', maand: 'Deze maand', kwartaal: 'Komende 3 maanden', later: 'Later' };
+const LICHT = { rood: 'Rood', geel: 'Geel', groen: 'Groen', nodata: 'Geen data', inactief: 'Inactief', info: 'Info' };
+const GEWENST_UITLEG = {
+  'Verlengingsoptie': 'aflopend mét of zonder verlenging onderscheiden (nu met de hand per contract)',
+  'Opzegtermijn': 'uiterste besluitdatum per contract in plaats van een vaste termijn',
+  'Uitputting': 'stoplicht Geld: besteed vs. contractwaarde',
+  'KPI-score': 'stoplicht Kwaliteit (nu met de hand per contract)',
+  'Laatste voortgangsgesprek': 'signaal als het kwartaalgesprek ontbreekt',
+  'Aanbestedingsprocedure': 'juiste doorlooptijd en wettoets (nu geschat uit het bedrag)',
+  'Thema': 'koppelkansen per onderwerp (nu op basis van kolom Cluster)',
+};
+
+/* ======================= Contracten ======================= */
+function bouwContracten(rows) {
+  const out = [];
+  for (const [, vs] of groupBy(rows, r => r.nr)) {
+    vs.sort((a, b) => (a.versie ?? 0) - (b.versie ?? 0));
+    const vast = vs.filter(v => v.vstatus !== 'Concept');
+    const basis = vast.length ? vast : vs;
+    const cur = basis[basis.length - 1];
+    out.push({
+      ...cur,
+      thema: cur.cluster || 'Geen cluster',
+      versies: vs, eerste: basis[0],
+      prev: basis.length > 1 ? basis[basis.length - 2] : null,
+      conceptOpen: vs.some(v => v.vstatus === 'Concept' && (v.versie ?? 0) > (cur.versie ?? 0)),
+      startD: parseDate(cur.start), eindD: parseDate(cur.eind),
+    });
+  }
+  return out;
+}
+const C = bouwContracten(D.rows);
+const THEMAS = [...new Set(C.map(c => c.thema))].sort((a, b) => a.localeCompare(b, 'nl'));
+const PERSONEN = [...new Set(C.flatMap(c => [c.cm, c.cb, c.ce]).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'nl'));
+
+/* ======================= State ======================= */
+const state = {
+  peil: parseDate(META.peildatum),
+  norm: { ...NORM0, ...store.get('norm', {}) },
+  vertrek: new Set(store.get('vertrek', [])),
+  plan: store.get('plan', {}),
+  status: store.get('status', {}),
+  toewijzing: store.get('toewijzing', {}),
+  kwaliteit: store.get('kwaliteit', {}),
+  intro: store.get('intro', true),
+  rol: 'mt', persoon: '', themas: new Set(), inactief: false,
+  tab: store.get('tab', 'overzicht'),
+  lijst: { zoek: '', filter: 'alle', sort: 'eind', dir: 1, breed: false },
+  acties: { wie: null, soort: 'alle', status: 'open', info: false },
+  werkRol: 'cm', focus: null, openSam: false, open: null,
+};
+const persoonView = () => state.rol !== 'mt' && !!state.persoon;
+
+/* ======================= Acties: wat, wie, uiterlijk ======================= */
+const ORDE = { rood: 0, geel: 1, info: 2 };
+const isEU = c => (c.bedrag ?? 0) >= state.norm.drempel;
+const doorloop = c => isEU(c) ? state.norm.doorloopEU : state.norm.doorloopNat;
+function niveau(u) {
+  if (!u) return 'info';
+  if (u < state.peil) return 'rood';
+  return u <= addMnd(state.peil, 3) ? 'geel' : 'info';
+}
+function wie(c, ...volgorde) {
+  for (const r of volgorde) if (c[r] && !state.vertrek.has(c[r])) return { rol: r, naam: c[r] };
+  return { rol: 'mt', naam: null };
+}
+function maakActies(c) {
+  const N = state.norm, A = [];
+  if (c.status !== 'Actief') return A;
+  const deze = eindMaand(state.peil);
+  const add = (key, cat, wat, waarom, auto, uiterlijk, lvl, bron) => {
+    const id = c.nr + '|' + key;
+    const over = state.toewijzing[id];
+    const w = over === 'MT' ? { rol: 'mt', naam: null }
+      : over ? { rol: Object.keys(ROL).find(k => c[k] === over) || null, naam: over } : auto;
+    A.push({ id, key, cat, wat, waarom, auto, wie: w, uiterlijk, lvl: lvl || niveau(uiterlijk), bron, status: state.status[id] || 'open', c });
+  };
+  // Tijd: uiterste start = einddatum min doorlooptijd van de (geschatte) procedure
+  const plan = state.plan[c.nr] || 'onbekend';
+  if (!c.eindD) add('geen_eind', 'data', 'Vul de einddatum aan', 'Einddatum ontbreekt, dus looptijdsignalen zijn niet mogelijk', wie(c, 'cb', 'cm', 'ce'), deze, 'geel');
+  else {
+    const m = mndTussen(state.peil, c.eindD);
+    if (m < 0) add('verlopen', 'tijd', 'Werk de status bij of leg de verlenging vast', `Einddatum ${fmtD(c.eindD)} is voorbij, maar het contract staat nog op Actief`, wie(c, 'cb', 'cm', 'ce'), c.eindD, 'rood');
+    else if (m <= Math.max(N.signaalMnd, doorloop(c))) {
+      const proc = isEU(c) ? `Europese aanbesteding duurt ± ${N.doorloopEU} mnd` : `aanbesteding onder de Europese drempel duurt ± ${N.doorloopNat} mnd`;
+      if (plan === 'verlengen') add('afloop', 'tijd', 'Leg de verlenging vast (nieuwe einddatum)', `Besloten te verlengen; in het systeem staat nog einddatum ${fmtD(c.eindD)}`, wie(c, 'cb', 'cm', 'ce'), addMnd(c.eindD, -1));
+      else if (plan === 'aanbesteding') add('afloop', 'tijd', 'Bewaak de planning van de (her)aanbesteding', `Nieuw contract nodig vóór ${fmtD(c.eindD)}`, wie(c, 'cm', 'ce'), c.eindD, 'info');
+      else if (plan === 'beeindigen') add('afloop', 'tijd', 'Bereid de afloop voor (overdracht, eindafrekening)', `Contract stopt op ${fmtD(c.eindD)}`, wie(c, 'cm', 'ce'), c.eindD, 'info');
+      else if (plan === 'optie') add('afloop', 'tijd', 'Besluit: verlengen of niet', `Verlengingsoptie aanwezig; loopt af op ${fmtD(c.eindD)}`, wie(c, 'ce', 'cm'), addMnd(c.eindD, -N.besluitMnd));
+      else add('afloop', 'tijd', plan === 'geenoptie' ? 'Start de (her)aanbesteding' : 'Kies: verlengen of opnieuw aanbesteden',
+        `Loopt af op ${fmtD(c.eindD)}; ${proc}${plan === 'onbekend' ? '. Verlengingsoptie is onbekend' : ''}`, wie(c, 'cm', 'ce'), addMnd(c.eindD, -doorloop(c)));
+    }
+  }
+  // Rollen
+  for (const [k, lvl] of [['ce', 'rood'], ['cm', 'rood'], ['cb', 'geel']]) {
+    if (!c[k]) add('rol_' + k, 'rollen', `Wijs een ${ROL[k].toLowerCase()} toe`, `Rol ${ROL[k].toLowerCase()} is niet belegd`, k === 'ce' ? { rol: 'mt', naam: null } : wie(c, 'ce'), deze, lvl);
+    else if (state.vertrek.has(c[k])) add('vertrek_' + k, 'rollen', `Regel de overdracht van ${c[k]}`, `${c[k]} (${ROL[k].toLowerCase()}) vertrekt`, k === 'ce' ? { rol: 'mt', naam: null } : wie(c, 'ce'), deze, 'geel');
+  }
+  if (c.cm && c.cm === c.cb) add('functiescheiding', 'rollen', 'Beleg het beheer bij een andere persoon', `${c.cm} is contractmanager én contractbeheerder (functiescheiding)`, wie(c, 'ce'), addMnd(state.peil, 3), 'geel');
+  if (c.prev) for (const k of ['ce', 'cm', 'cb']) {
+    if (c.prev[k] && c[k] && c.prev[k] !== c[k]) add('rolwissel_' + k, 'rollen', 'Check of de overdracht rond is', `${ROL[k]} gewisseld in versie ${c.versie}: ${c.prev[k]} → ${c[k]}`, { rol: k, naam: c[k] }, addMnd(state.peil, 1), 'info');
+  }
+  // Geld
+  if (c.bedrag == null || c.bedrag === 0) add('bedrag', 'data', 'Vul de contractwaarde aan', 'Bedrag ontbreekt of is € 0', wie(c, 'cb', 'cm', 'ce'), deze, 'info');
+  else if (c.eerste && c.eerste.bedrag > 0 && c.bedrag > c.eerste.bedrag * (1 + N.wijzigGrens / 100)) {
+    const p = Math.round((c.bedrag / c.eerste.bedrag - 1) * 100);
+    add('wijziging', 'geld', 'Toets de waardestijging aan de Aanbestedingswet', `Waarde +${p}% t.o.v. versie ${c.eerste.versie} (${eur(c.eerste.bedrag)} → ${eur(c.bedrag)}). Grens art. 2.163b: 10% leveringen/diensten, 15% werken`, wie(c, 'cm', 'ce'), addMnd(state.peil, 3), 'geel', AW);
+  }
+  // Wet
+  if (c.type === 'Raamovereenkomst' && c.startD && c.eindD) {
+    const lt = mndTussen(c.startD, c.eindD);
+    if (lt > N.maxLooptijdMnd + 0.5) add('looptijd', 'wet', 'Leg de motivering voor de lange looptijd vast', `Raamovereenkomst van ${fmtMnd(lt)}; art. 2.140: max. 4 jaar, tenzij gemotiveerd`, wie(c, 'cm', 'ce'), addMnd(state.peil, 3), 'geel', AW);
+  }
+  if (c.conceptOpen) add('concept', 'data', 'Rond de conceptversie af of trek hem in', 'Er staat een conceptversie open', wie(c, 'cb', 'cm', 'ce'), deze, 'info');
+  // Kwaliteit (handmatig, tot KPI-data in de export zit)
+  const kwal = state.kwaliteit[c.nr];
+  if (kwal && kwal.oordeel === 'onvoldoende') add('kwaliteit', 'kwaliteit', 'Spreek de leverancier aan op de tekortkoming', 'Kwaliteit beoordeeld als onvoldoende. Leg afspraken schriftelijk vast; blijft het tekortschieten, kijk dan naar ingebrekestelling (BW boek 6)', wie(c, 'cm', 'ce'), addMnd(state.peil, 1), 'rood', BW);
+  else if (kwal && kwal.oordeel === 'aandacht') add('kwaliteit', 'kwaliteit', 'Maak verbeterafspraken met de leverancier', 'Kwaliteit vraagt aandacht', wie(c, 'cm', 'ce'), addMnd(state.peil, 3), 'geel');
+  if (kwal && kwal.gesprek && mndTussen(parseDate(kwal.gesprek), state.peil) > 3) add('gesprek', 'kwaliteit', 'Plan het voortgangsgesprek', `Laatste voortgangsgesprek ${fmtD(parseDate(kwal.gesprek))}, langer dan 3 maanden geleden`, wie(c, 'cm', 'ce'), deze, 'geel');
+  return A.sort((a, b) => ORDE[a.lvl] - ORDE[b.lvl] || ((a.uiterlijk ? +a.uiterlijk : 8.64e15) - (b.uiterlijk ? +b.uiterlijk : 8.64e15)));
+}
+function herbereken() {
+  for (const c of C) {
+    c._a = maakActies(c);
+    c._open = c._a.filter(a => a.status !== 'klaar');
+    c._v = c.status !== 'Actief' ? 'inactief' : c._open.some(a => a.lvl === 'rood') ? 'rood' : c._open.some(a => a.lvl === 'geel') ? 'geel' : 'groen';
+  }
+}
+function bucket(a) {
+  if (!a.uiterlijk) return 'later';
+  if (a.uiterlijk < state.peil) return 'telaat';
+  if (a.uiterlijk <= eindMaand(state.peil)) return 'maand';
+  return a.uiterlijk <= addMnd(state.peil, 3) ? 'kwartaal' : 'later';
+}
+const vergelijk = opGeld => (a, b) => ORDE[a.lvl] - ORDE[b.lvl]
+  || (opGeld ? (b.c.bedrag || 0) - (a.c.bedrag || 0) : 0)
+  || ((a.uiterlijk ? +a.uiterlijk : 8.64e15) - (b.uiterlijk ? +b.uiterlijk : 8.64e15));
+
+/* ======================= Selecties ======================= */
+const heeft = pred => c => c._open.some(pred);
+const k = key => a => a.key === key || a.key.startsWith(key + '_');
+const isAflopend = c => c.status === 'Actief' && c.eindD && c.eindD >= state.peil && mndTussen(state.peil, c.eindD) <= state.norm.signaalMnd;
+const FILTERS = {
+  alle: ['Alle contracten', () => true],
+  aandacht: ['Stoplicht rood of geel', c => c._v === 'rood' || c._v === 'geel'],
+  rood: ['Stoplicht rood', c => c._v === 'rood'],
+  verlopen: ['Verlopen maar nog actief', heeft(k('verlopen'))],
+  aflopend: ['Loopt af binnen de signaaltermijn', isAflopend],
+  telaat: ['Te laat: aanbesteden of besluiten', heeft(a => a.key === 'afloop' && a.lvl === 'rood')],
+  binnenkort: ['Binnen 3 maanden starten of besluiten', heeft(a => a.key === 'afloop' && a.lvl === 'geel')],
+  zonderplan: ['Aflopend zonder plan', c => isAflopend(c) && !PLAN_VAST.includes(state.plan[c.nr])],
+  metplan: ['Aflopend met plan', c => isAflopend(c) && PLAN_VAST.includes(state.plan[c.nr])],
+  rol: ['Rol niet belegd', heeft(k('rol'))],
+  rol_cm: ['Geen contractmanager', heeft(k('rol_cm'))],
+  rol_ce: ['Geen contracteigenaar', heeft(k('rol_ce'))],
+  rol_cb: ['Geen contractbeheerder', heeft(k('rol_cb'))],
+  vertrek: ['Medewerker vertrekt', heeft(k('vertrek'))],
+  functiescheiding: ['Functiescheiding', heeft(k('functiescheiding'))],
+  rolwissel: ['Rolwissel sinds vorige versie', heeft(k('rolwissel'))],
+  wijziging: ['Waardestijging boven grens', heeft(k('wijziging'))],
+  looptijd: ['Raamovereenkomst > max. looptijd', heeft(k('looptijd'))],
+  kwaliteit: ['Kwaliteit vraagt aandacht', heeft(a => a.cat === 'kwaliteit')],
+  data: ['Datakwaliteit', heeft(a => a.cat === 'data')],
+};
+function inScope(c, { rol = true, thema = true } = {}) {
+  if (!state.inactief && c.status !== 'Actief') return false;
+  if (thema && state.themas.size && !state.themas.has(c.thema)) return false;
+  if (rol && persoonView() && c[state.rol] !== state.persoon) return false;
+  return true;
+}
+const sel = o => C.filter(c => inScope(c, o));
+const actief = l => l.filter(c => c.status === 'Actief');
+/** Open acties in beeld: van de gekozen persoon, of alles in de selectie. */
+function actiesInBeeld({ info = false } = {}) {
+  const l = persoonView()
+    ? C.filter(c => inScope(c, { rol: false })).flatMap(c => c._open).filter(a => a.wie.naam === state.persoon)
+    : sel().flatMap(c => c._open);
+  return info ? l : l.filter(a => a.lvl !== 'info');
+}
+function catLicht(list, cat, forceRood = false) {
+  if (!list.length) return 'nodata';
+  const rood = list.filter(c => c._open.some(a => a.cat === cat && a.lvl === 'rood')).length;
+  const iets = list.filter(c => c._open.some(a => a.cat === cat && a.lvl !== 'info')).length;
+  if (forceRood || rood / list.length * 100 >= state.norm.roodAandeel) return 'rood';
+  return iets ? 'geel' : 'groen';
+}
+function portfolioLicht(list) {
+  if (!list.length) return 'nodata';
+  if (list.filter(c => c._v === 'rood').length / list.length * 100 >= state.norm.roodAandeel) return 'rood';
+  return list.some(c => c._v !== 'groen') ? 'geel' : 'groen';
+}
+function capaciteit(rol, act) {
+  const norm = rol === 'cm' ? state.norm.normCM : rol === 'cb' ? state.norm.normCB : null;
+  if (!norm) return null;
+  const mensen = [...new Set(act.map(c => c[rol]).filter(Boolean))];
+  const blijft = mensen.filter(p => !state.vertrek.has(p)).length;
+  const nodig = Math.ceil(act.length / norm);
+  const boven = [...groupBy(act, c => c[rol])].filter(([p, l]) => p && l.length > norm).map(([p, l]) => ({ p, n: l.length }));
+  return { rol, norm, nodig, blijft, vertrekt: mensen.length - blijft, tekort: nodig - blijft, boven, zonder: act.filter(c => !c[rol]).length };
+}
+function capTekst(k) {
+  if (!k) return '';
+  const s = `Bij een norm van ${k.norm} zijn <b>${k.nodig}</b> ${ROLMV[k.rol]} nodig; er ${k.blijft === 1 ? 'is' : 'zijn'} er <b>${k.blijft}</b>${k.vertrekt ? ` (plus ${k.vertrekt} die vertrekt)` : ''}.`;
+  if (k.tekort > 0) return `${s} Tekort: <b>${k.tekort}</b>.`;
+  if (k.boven.length) return `${s} Genoeg mensen, maar ${k.boven.map(x => `${esc(x.p)} (${x.n})`).join(', ')} ${k.boven.length === 1 ? 'zit' : 'zitten'} boven de norm: herverdelen.`;
+  return `${s} Capaciteit in orde.`;
+}
+function scopeNaam() {
+  if (persoonView()) return `${state.persoon} (${ROL[state.rol].toLowerCase()})`;
+  return state.themas.size ? [...state.themas].join(', ') : 'de hele afdeling';
+}
+
+/* ======================= UI-bouwstenen ======================= */
+function vriHtml(l) {
+  return `<span class="vri-wrap"><span class="vri" aria-hidden="true"><i class="r ${l === 'rood' ? 'on' : ''}"></i><i class="y ${l === 'geel' ? 'on' : ''}"></i><i class="g ${l === 'groen' ? 'on' : ''}"></i></span><span class="vri-label">${LICHT[l]}</span></span>`;
+}
+const dot = l => `<span class="dot ${l}" title="${LICHT[l] || l}"></span>`;
+const pill = l => `<span class="pill ${l}">${LICHT[l] || l}</span>`;
+const wieKort = w => w.rol === 'mt' ? 'MT' : esc(w.naam);
+const wieTekst = w => w.rol === 'mt' ? '<b>MT</b><small>geen eigenaar bekend</small>' : `<b>${esc(w.naam)}</b>${w.rol ? `<small>${ROL[w.rol].toLowerCase()}</small>` : ''}`;
+function wanneer(u) {
+  if (!u) return '<span class="muted">geen termijn</span>';
+  return `${fmtD(u)}${u < state.peil ? `<small class="laat">${fmtMnd(mndTussen(u, state.peil))} te laat</small>` : ''}`;
+}
+const statusSelect = a => `<select class="stat ${a.status}" data-status="${esc(a.id)}" aria-label="Status">${Object.entries(STATUS).map(([k2, v]) => `<option value="${k2}" ${k2 === a.status ? 'selected' : ''}>${v}</option>`).join('')}</select>`;
+function regelLijst(regels) {
+  return `<ul class="summary">${regels.map(([lvl, html, key]) => `<li>${pill(lvl)}<span>${html}</span>${key ? `<button class="link" data-goto="${key}">Toon →</button>` : '<span></span>'}</li>`).join('')}</ul>`;
+}
+const actieRij = a => `<li data-open="${esc(a.c.nr)}">${dot(a.lvl)}<span class="t">${esc(a.wat)}</span><span class="s">${esc(a.c.naam)} · ${wieKort(a.wie)} · uiterlijk ${fmtD(a.uiterlijk)}${a.uiterlijk && a.uiterlijk < state.peil ? ' <span class="laat">(te laat)</span>' : ''}${a.status === 'bezig' ? ' · <span class="pill blauw">opgepakt</span>' : ''}</span></li>`;
+async function kopieer(tekst, knop, label) {
+  try { await navigator.clipboard.writeText(tekst); }
+  catch (err) { const t = document.createElement('textarea'); t.value = tekst; document.body.append(t); t.select(); document.execCommand('copy'); t.remove(); }
+  knop.textContent = 'Gekopieerd ✓'; setTimeout(() => { knop.textContent = label; }, 1500);
+}
+
+/* ======================= Tab: Overzicht ======================= */
+function kortGezegd(lijst) {
+  if (!lijst.length && !persoonView()) return 'Kort gezegd: geen open acties. Alles staat op groen.';
+  const b = groupBy(lijst, bucket);
+  const n = key => (b.get(key) || []).length;
+  const tl = n('telaat'), dm = n('maand');
+  const deel = `<b>${tl}</b> ${tl === 1 ? 'is' : 'zijn'} te laat en <b>${dm}</b> ${dm === 1 ? 'moet' : 'moeten'} deze maand gebeuren`;
+  if (persoonView()) {
+    const anderen = sel().flatMap(c => c._open).filter(a => a.lvl !== 'info' && a.wie.naam !== state.persoon);
+    const al = anderen.filter(a => bucket(a) === 'telaat').length;
+    return `Kort gezegd: ${lijst.length ? `je hebt <b>${lijst.length}</b> open ${mvA(lijst.length)}. ${deel}.` : 'je hebt geen open acties.'}${anderen.length ? ` Op jouw contracten liggen nog <b>${anderen.length}</b> ${mvA(anderen.length)} bij anderen${al ? `, <b>${al}</b> te laat` : ''}. <button class="link" data-tab-go="acties" data-wie-alle="1">Bekijk →</button>` : ''}`;
+  }
+  const top = lijst.filter(a => a.lvl === 'rood').sort(vergelijk(true))[0];
+  return `Kort gezegd: <b>${lijst.length}</b> open ${mvA(lijst.length)}; ${deel}.${top ? ` Grootste risico: <button class="link" data-open="${esc(top.c.nr)}">${esc(top.c.naam)}</button> (${eur(top.c.bedrag)}), ${esc(top.wat.charAt(0).toLowerCase() + top.wat.slice(1))}.` : ''}`;
+}
+function scopeRegel() {
+  const filter = state.themas.size || persoonView() || state.inactief;
+  return `<p class="scope">Wat vraagt aandacht bij <b>${esc(scopeNaam())}</b>? Peildatum ${fmtD(state.peil)}.${filter ? ' <button class="link" data-wis="1">Wis filters</button>' : ''}</p>`;
+}
+function introHtml() {
+  if (!state.intro) return '';
+  return `<section class="card intro"><div><b>Zo gebruik je dit dashboard</b><ol>
+    <li>Kies bovenaan bij <b>Bekijk als</b> je rol en naam. Je ziet dan alleen jouw contracten en acties.</li>
+    <li>De vier stoplichten geven de stand op tijd, geld, kwaliteit en rollen. Klik op een stoplicht voor details.</li>
+    <li>Werk je acties af onder <b>Acties</b>: zet ze op Opgepakt of Klaar. Leg bij aflopende contracten het plan vast, dan verdwijnt het rode signaal.</li>
+  </ol>${META.dummy ? '<p style="margin:10px 0 0"><button class="btn" type="button" data-demo="vul">Demo: simuleer een maand gebruik</button> <span class="muted">vult voorbeeld-plannen, -statussen en -oordelen in, zodat je ziet hoe de stoplichten reageren</span></p>' : ''}</div><button class="btn" type="button" data-intro="weg">Begrepen</button></section>`;
+}
+const PANELS = {
+  tijd(act) {
+    const N = state.norm, f = key => act.filter(FILTERS[key][1]), r = [];
+    const verlopen = f('verlopen'), telaat = f('telaat'), binnen = f('binnenkort'), zonder = f('zonderplan'), met = f('metplan'), lang = f('looptijd');
+    if (verlopen.length) r.push(['rood', `<b>${verlopen.length}</b> ${mv(verlopen.length)} voorbij de einddatum, status nog Actief`, 'verlopen']);
+    if (telaat.length) r.push(['rood', `<b>${telaat.length}</b> ${mv(telaat.length)}: de uiterste start van de (her)aanbesteding of het verlengingsbesluit is voorbij`, 'telaat']);
+    if (binnen.length) r.push(['geel', `<b>${binnen.length}</b> ${mv(binnen.length)}: binnen 3 maanden starten of besluiten`, 'binnenkort']);
+    r.push(['info', `<b>${zonder.length}</b> aflopende ${mv(zonder.length)} zonder vastgelegd plan (${eur(sum(zonder, c => c.bedrag))})`, 'zonderplan']);
+    if (met.length) r.push(['groen', `<b>${met.length}</b> aflopende ${mv(met.length)} met een plan`, 'metplan']);
+    if (lang.length) r.push(['geel', `<b>${lang.length}</b> ${lang.length === 1 ? 'raamovereenkomst loopt' : 'raamovereenkomsten lopen'} langer dan ${fmtMnd(N.maxLooptijdMnd)}`, 'looptijd']);
+    return `<h2>Tijd: wat loopt af en wanneer moet je beginnen?</h2>${regelLijst(r)}
+      <p class="note">Uiterste start = einddatum min doorlooptijd: ± ${N.doorloopEU} mnd boven de Europese drempel (${eur(N.drempel)}), ± ${N.doorloopNat} mnd eronder. Leg per contract het plan vast; dan verdwijnt het rode signaal.</p>
+      <div class="grid g75 mt16"><div><h3 class="h3s">Aflopend per maand</h3>${maandChart(act)}</div>${vertrekbord(act)}</div>`;
+  },
+  geld(act) {
+    const N = state.norm;
+    const top = act.filter(c => c.bedrag).sort((a, b) => b.bedrag - a.bedrag).slice(0, 5);
+    const perThema = [...groupBy(act, c => c.thema)].map(([t, l]) => [t, sum(l, c => c.bedrag)]).sort((a, b) => b[1] - a[1]);
+    const max = Math.max(1, ...perThema.map(x => x[1]));
+    const zonder = act.filter(FILTERS.zonderplan[1]), wijz = act.filter(FILTERS.wijziging[1]);
+    const r = [['geel', `<b>${eur(sum(zonder, c => c.bedrag))}</b> aan contractwaarde loopt binnen ${N.signaalMnd} maanden af zonder vastgelegd plan`, 'zonderplan']];
+    if (wijz.length) r.push(['geel', `<b>${wijz.length}</b> ${mv(wijz.length)} stegen meer dan ${N.wijzigGrens}% in waarde t.o.v. de eerste versie: toetsen`, 'wijziging']);
+    r.push(['info', 'Uitputting (besteed vs. contractwaarde) staat niet in de export. Daarom kijkt het stoplicht nu alleen naar waardestijgingen.', null]);
+    return `<h2>Geld: waar zit het geld en het risico?</h2>${regelLijst(r)}
+      <div class="grid g2 mt16">
+        <div><h3 class="h3s">Grootste contracten</h3><ul class="acties">${top.map(c => `<li data-open="${esc(c.nr)}">${dot(c._v)}<span class="t">${esc(c.naam)} <span class="muted">· ${eur(c.bedrag)}</span></span><span class="s">${esc(c._open[0] ? c._open[0].wat : 'Geen acties')}</span></li>`).join('')}</ul></div>
+        <div><h3 class="h3s">Waarde per thema</h3>${perThema.map(([t, w]) => `<div class="tbar" data-thema="${esc(t)}" data-tip="${esc(`${t}\n${eur(w)}\nKlik voor de contracten`)}"><span class="tl">${esc(t)}</span><span><span class="b" style="width:${Math.max(0.5, w / max * 100)}%"></span></span><span class="num">${eur(w)}</span></div>`).join('')}</div>
+      </div>`;
+  },
+  kwaliteit(act) {
+    const beoordeeld = act.filter(c => state.kwaliteit[c.nr] && state.kwaliteit[c.nr].oordeel);
+    const zorg = act.filter(FILTERS.kwaliteit[1]);
+    return `<h2>Kwaliteit: levert de leverancier wat is afgesproken?</h2>
+      <p class="lead">KPI-scores staan niet in de export. Tot die er zijn, kun je per contract een oordeel en de datum van het laatste voortgangsgesprek invullen (in het contractdetail). Nu beoordeeld: <b>${beoordeeld.length}</b> van ${act.length}.</p>
+      ${zorg.length ? `${regelLijst([['rood', `<b>${zorg.length}</b> ${mv(zorg.length)} met een kwaliteitsprobleem of een gemist voortgangsgesprek`, 'kwaliteit']])}<div class="mt16"></div>` : ''}
+      ${watMistInhoud(act)}`;
+  },
+  rollen(act) {
+    const r = [];
+    for (const kk of ['cm', 'ce', 'cb']) {
+      const n = act.filter(c => !c[kk]).length;
+      if (n) r.push([kk === 'cb' ? 'geel' : 'rood', `<b>${n}</b> ${mv(n)} zonder ${ROL[kk].toLowerCase()}`, 'rol_' + kk]);
+    }
+    const vertrek = act.filter(FILTERS.vertrek[1]), fs = act.filter(FILTERS.functiescheiding[1]), wissel = act.filter(FILTERS.rolwissel[1]);
+    if (vertrek.length) r.push(['geel', `<b>${vertrek.length}</b> ${mv(vertrek.length)} met een vertrekkende medewerker`, 'vertrek']);
+    if (fs.length) r.push(['geel', `<b>${fs.length}</b> ${mv(fs.length)} met dezelfde persoon als contractmanager én beheerder`, 'functiescheiding']);
+    if (wissel.length) r.push(['info', `<b>${wissel.length}</b> ${mv(wissel.length)} kregen in de laatste versie een andere rolhouder`, 'rolwissel']);
+    if (!vertrek.length) r.push(['info', 'Gaat er iemand weg? Vink dat aan bij Werkverdeling; dan worden hun contracten gesignaleerd.', null]);
+    const capCM = persoonView() ? null : capaciteit('cm', act);
+    return `<h2>Rollen: is alles belegd${capCM ? ' en is er genoeg capaciteit' : ''}?</h2>${regelLijst(r)}
+      ${capCM ? `<div class="advies"><h3>Capaciteit contractmanagers</h3>${capTekst(capCM)}</div>` : ''}
+      <p style="margin:12px 0 0"><button class="link" data-tab-go="werk">Naar werkverdeling →</button></p>`;
+  },
+};
+function samenvattingHtml(act) {
+  const N = state.norm, f = key => act.filter(FILTERS[key][1]);
+  const T = { verlopen: f('verlopen'), telaat: f('telaat'), afl: f('aflopend'), zonder: f('zonderplan'), rol: f('rol'), vertrek: f('vertrek'), wijz: f('wijziging'), lang: f('looptijd'), fs: f('functiescheiding'), kw: f('kwaliteit') };
+  const items = [];
+  const it = (lvl, html, key) => items.push([lvl, html, key]);
+  if (T.verlopen.length) it('rood', `<b>${T.verlopen.length}</b> ${mv(T.verlopen.length)} staan nog op Actief terwijl de einddatum voorbij is.`, 'verlopen');
+  if (T.telaat.length) it('rood', `Bij <b>${T.telaat.length}</b> ${mv(T.telaat.length)} is de uiterste start van aanbesteding of besluit voorbij.`, 'telaat');
+  it('info', `<b>${T.afl.length}</b> ${mv(T.afl.length)} lopen af binnen ${N.signaalMnd} maanden; <b>${T.zonder.length}</b> daarvan zonder plan.`, 'aflopend');
+  if (T.rol.length) it('rood', `<b>${T.rol.length}</b> ${mv(T.rol.length)} missen een rol.`, 'rol');
+  if (T.vertrek.length) it('geel', `<b>${T.vertrek.length}</b> ${mv(T.vertrek.length)} hebben een rol bij iemand die vertrekt.`, 'vertrek');
+  if (T.fs.length) it('geel', `<b>${T.fs.length}</b> ${mv(T.fs.length)} met dezelfde persoon als contractmanager én beheerder.`, 'functiescheiding');
+  if (T.wijz.length) it('geel', `<b>${T.wijz.length}</b> ${mv(T.wijz.length)} stegen meer dan ${N.wijzigGrens}% in waarde.`, 'wijziging');
+  if (T.lang.length) it('geel', `<b>${T.lang.length}</b> ${T.lang.length === 1 ? 'raamovereenkomst loopt' : 'raamovereenkomsten lopen'} langer dan ${fmtMnd(N.maxLooptijdMnd)}.`, 'looptijd');
+  if (T.kw.length) it('rood', `<b>${T.kw.length}</b> ${mv(T.kw.length)} met een kwaliteitsprobleem.`, 'kwaliteit');
+
+  const advies = [];
+  if (T.telaat.length) {
+    const g = [...T.telaat].sort((a, b) => (b.bedrag || 0) - (a.bedrag || 0))[0];
+    advies.push(`Leg bij de ${T.telaat.length} te late contracten het plan vast (verlengen, aanbesteden of laten aflopen). Begin bij het grootste: <button class="link" data-open="${esc(g.nr)}">${esc(g.naam)}</button> (${eur(g.bedrag)}).`);
+  }
+  if (T.verlopen.length) advies.push(`Laat de contractbeheerders de status van ${T.verlopen.length} verlopen ${mv(T.verlopen.length)} bijwerken. Afnemen zonder geldig contract is een rechtmatigheidsrisico.`);
+  if (T.rol.length) {
+    const g = [...T.rol].sort((a, b) => (b.bedrag || 0) - (a.bedrag || 0))[0];
+    advies.push(`Wijs ontbrekende rollen toe, te beginnen bij <button class="link" data-open="${esc(g.nr)}">${esc(g.naam)}</button> (${eur(g.bedrag)}).`);
+  }
+  if (!persoonView()) { const kc = capaciteit('cm', act); if (kc && (kc.tekort > 0 || kc.boven.length)) advies.push(`Capaciteit: ${capTekst(kc)}`); }
+  const kansen = koppelkansen(act);
+  if (kansen.length) advies.push(`Er ${kansen.length === 1 ? 'is 1 koppelkans' : `zijn ${kansen.length} koppelkansen`}: contracten in hetzelfde thema die kort na elkaar aflopen. <button class="link" data-tab-go="thema">Bekijk per thema →</button>`);
+  advies.push('Voeg KPI-scores, uitputting en verlengingsopties toe aan de export. Dan zijn minder handmatige aanvullingen nodig.');
+  return { aantal: items.length, html: `${regelLijst(items)}
+    <div class="advies"><h3>Advies</h3><ol>${advies.slice(0, 5).map(a => `<li>${a}</li>`).join('')}</ol></div>
+    <p class="bron">Bron: ${esc(META.bron)} · ${META.regels} regels · ${C.length} contracten (laatste versie per contractnummer). Aanvullingen (plan, status, kwaliteit) staan in deze browser. Rekenregels: tab Uitleg.</p>` };
+}
+function renderOverzicht(el) {
+  const N = state.norm, act = actief(sel()), n = act.length;
+  const f = key => act.filter(FILTERS[key][1]);
+  const tijdRood = act.filter(c => c._open.some(a => a.cat === 'tijd' && a.lvl === 'rood'));
+  const afl = f('aflopend'), zonder = f('zonderplan'), rolMis = f('rol');
+  const beoordeeld = act.filter(c => state.kwaliteit[c.nr] && state.kwaliteit[c.nr].oordeel);
+  const onv = beoordeeld.filter(c => state.kwaliteit[c.nr].oordeel === 'onvoldoende').length;
+  const kc = persoonView() ? null : capaciteit('cm', act);
+  const verl = f('verlopen').length;
+  const tegels = {
+    tijd: ['Tijd', catLicht(act, 'tijd', verl > 0), tijdRood.length, 'te laat met plan, besluit of status', `van de ${afl.length} die binnen ${N.signaalMnd} mnd aflopen${verl ? `, plus ${verl} verlopen` : ''}`],
+    geld: ['Geld', catLicht(act, 'geld'), eur(sum(act, c => c.bedrag)), `in ${n} actieve ${mv(n)}`, `${eur(sum(zonder, c => c.bedrag))} loopt af zonder plan`],
+    kwaliteit: ['Kwaliteit', beoordeeld.length ? catLicht(act, 'kwaliteit') : 'nodata', beoordeeld.length ? `${beoordeeld.length}/${n}` : '—', beoordeeld.length ? 'contracten beoordeeld' : 'nog geen KPI-scores', beoordeeld.length ? `${onv} onvoldoende` : 'vul per contract een oordeel in'],
+    rollen: ['Rollen', catLicht(act, 'rollen'), pct(act.filter(c => c.ce && c.cm && c.cb).length, n) + '%', 'van de contracten heeft alle rollen belegd', `${rolMis.length} ${rolMis.length === 1 ? 'mist' : 'missen'} een rol${kc && kc.tekort > 0 ? ` · tekort ${kc.tekort} contractmgr` : ''}`],
+  };
+  const tegelHtml = Object.entries(tegels).map(([key, [titel, licht, groot, sub, sub2]]) => `
+    <button type="button" class="card tile" data-focus="${key}" aria-expanded="${state.focus === key}">
+      <span class="tile-head"><span class="h3">${titel}</span>${vriHtml(licht)}</span>
+      <span class="big">${groot}</span><span class="sub">${sub}</span><span class="sub2">${sub2}</span>
+      <span class="meer">${state.focus === key ? 'Minder ▴' : 'Details ▾'}</span>
+    </button>`).join('');
+  const lijst = actiesInBeeld();
+  let nu;
+  if (persoonView()) nu = [...lijst].sort(vergelijk(false)).slice(0, 3);
+  else { const gezien = new Set(); nu = [...lijst].sort(vergelijk(true)).filter(a => !gezien.has(a.c.nr) && gezien.add(a.c.nr)).slice(0, 3); }
+  const sam = samenvattingHtml(act);
+  el.innerHTML = `
+    ${introHtml()}
+    ${scopeRegel()}
+    <p class="headline">${kortGezegd(lijst)}</p>
+    <div class="grid g4">${tegelHtml}</div>
+    ${state.focus ? `<section class="card panel mt16">${PANELS[state.focus](act)}</section>` : ''}
+    <section class="card mt16">
+      <h2>${persoonView() ? 'Jouw eerstvolgende acties' : 'Grootste risico\'s nu'}</h2>
+      <p class="lead">${persoonView() ? 'De drie urgentste acties waar jij aan zet bent.' : 'De drie urgentste contracten, grootste bedragen eerst.'} Klik voor details en om de actie af te handelen.</p>
+      <ul class="acties">${nu.map(actieRij).join('') || '<li class="muted">Niets urgent.</li>'}</ul>
+      ${lijst.length > nu.length ? `<p style="margin:10px 0 0"><button class="link" data-tab-go="acties">Alle ${lijst.length} open ${mvA(lijst.length)} →</button></p>` : ''}
+    </section>
+    <details class="card mt16 more" id="sam" ${state.openSam ? 'open' : ''}>
+      <summary><b>Volledige samenvatting en advies</b><span class="muted">· ${sam.aantal} punten</span></summary>
+      ${sam.html}
+    </details>`;
+  $('#sam').addEventListener('toggle', e => { state.openSam = e.target.open; });
+}
+
+/* Tijd-visualisaties */
+function opmerking(c) {
+  const a = c._open.find(x => x.cat === 'tijd');
+  const plan = state.plan[c.nr] || 'onbekend';
+  if (a && a.key === 'verlopen') return ['VERTRAAGD', 'rood blink'];
+  if (!c.cm) return ['Geen contractmgr', 'rood'];
+  if (plan === 'verlengen') return ['Wordt verlengd', 'groen'];
+  if (plan === 'aanbesteding') return ['Aanbesteding loopt', 'groen'];
+  if (plan === 'beeindigen') return ['Stopt', 'groen'];
+  if (a && a.lvl === 'rood') return [plan === 'optie' ? 'Besluit te laat' : 'Plan te laat', 'rood'];
+  if (a && a.lvl === 'geel') return [plan === 'optie' ? 'Besluit nodig' : 'Plan nodig', 'geel'];
+  return ['Plan?', 'geel'];
+}
+function vertrekbord(act) {
+  const verlopen = act.filter(c => c.eindD && c.eindD < state.peil);
+  const lijst = act.filter(c => c.eindD && c.eindD >= state.peil).sort((a, b) => a.eindD - b.eindD).slice(0, verlopen.length ? 8 : 9);
+  const vRij = verlopen.length ? `<tr data-goto="verlopen"><td class="t">--:--</td><td class="naam" colspan="2">${verlopen.length} ${mv(verlopen.length)} voorbij einddatum, status nog Actief<small>klik voor de lijst</small></td><td class="opm rood blink">VERTRAAGD</td></tr>` : '';
+  return `<section class="board" aria-label="Vertrekbord">
+    <h2>Vertrekbord</h2>
+    <p class="lead">Eerstvolgende aflopende contracten · klik voor details</p>
+    <table><thead><tr><th>Einde</th><th>Contract</th><th>Contractmgr</th><th>Status</th></tr></thead>
+    <tbody>${vRij}${lijst.map(c => { const [o, cls] = opmerking(c); return `<tr data-nr="${esc(c.nr)}"><td class="t">${fmtDkort(c.eindD)}</td><td class="naam">${esc(c.naam)}<small>${esc(c.lev || '')} · ${eur(c.bedrag)}</small></td><td>${esc(c.cm || '—')}</td><td class="opm ${cls}">${o}</td></tr>`; }).join('') || '<tr><td colspan="4">Geen contracten</td></tr>'}</tbody></table>
+  </section>`;
+}
+function maandChart(act) {
+  const N = state.norm, M = 24;
+  const p0 = new Date(state.peil.getFullYear(), state.peil.getMonth(), 1);
+  const klasse = c => c._open.some(a => a.cat === 'tijd' && a.lvl === 'rood') ? 'rood' : c._open.some(a => a.cat === 'tijd' && a.lvl === 'geel') ? 'geel' : 'groen';
+  const B = [{ label: 'Verlopen', lang: 'Verlopen (nog actief)', items: [] }];
+  for (let i = 0; i < M; i++) {
+    const s = addMnd(p0, i);
+    B.push({ label: s.toLocaleDateString('nl-NL', { month: 'short' }) + ` '${String(s.getFullYear()).slice(2)}`, lang: s.toLocaleDateString('nl-NL', { month: 'long', year: 'numeric' }), items: [] });
+  }
+  for (const c of act) {
+    if (!c.eindD) continue;
+    if (c.eindD < state.peil) { B[0].items.push(c); continue; }
+    const i = (c.eindD.getFullYear() - p0.getFullYear()) * 12 + c.eindD.getMonth() - p0.getMonth();
+    if (i >= 0 && i < M) B[i + 1].items.push(c);
+  }
+  const W = 760, H = 250, L = 30, R = 8, T = 26, Bm = 30;
+  const pw = W - L - R, ph = H - T - Bm, step = pw / B.length, bw = Math.max(4, step - 6);
+  const maxV = Math.max(1, ...B.map(b => b.items.length));
+  const tickStep = maxV <= 5 ? 1 : maxV <= 12 ? 2 : maxV <= 30 ? 5 : 10;
+  const top = Math.ceil(maxV / tickStep) * tickStep;
+  const y = v => T + ph - v / top * ph;
+  const kleur = { rood: 'var(--crit)', geel: 'var(--warn)', groen: 'var(--good)' };
+  let g = '';
+  for (let v = 0; v <= top; v += tickStep) g += `<line class="${v === 0 ? 'baseline' : 'gridline'}" x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}"/><text x="${L - 6}" y="${y(v) + 4}" text-anchor="end">${v}</text>`;
+  B.forEach((b, i) => {
+    const x = L + i * step + (step - bw) / 2;
+    const segs = ['rood', 'geel', 'groen'].map(kl => [kl, b.items.filter(c => klasse(c) === kl).length]).filter(([, n]) => n);
+    let base = T + ph;
+    segs.forEach(([kl, n], j) => {
+      const h = n / top * ph, y0 = base - h, gap = j > 0 ? 2 : 0, bot = base - gap;
+      if (j === segs.length - 1) {
+        const r = Math.max(0, Math.min(4, bot - y0, bw / 2));
+        g += `<path d="M${x},${bot} V${y0 + r} Q${x},${y0} ${x + r},${y0} H${x + bw - r} Q${x + bw},${y0} ${x + bw},${y0 + r} V${bot} Z" fill="${kleur[kl]}"/>`;
+      } else g += `<rect x="${x}" y="${y0}" width="${bw}" height="${Math.max(0, bot - y0)}" fill="${kleur[kl]}"/>`;
+      base = y0;
+    });
+    if (i === 0) g += `<text x="${L}" y="${H - 10}">Verlopen</text>`;
+    else if (i >= 3 && i % 3 === 0) g += `<text x="${L + i * step + step / 2}" y="${H - 10}" text-anchor="middle">${b.label}</text>`;
+    const n = b.items.length, cnt = kl => b.items.filter(c => klasse(c) === kl).length;
+    const namen = b.items.slice(0, 6).map(c => '• ' + c.naam).join('\n') + (n > 6 ? `\n… en ${n - 6} meer` : '');
+    const tip = `${b.lang}\n${n} ${mv(n)} · ${eur(sum(b.items, c => c.bedrag))}${n ? `\nRood ${cnt('rood')} · geel ${cnt('geel')} · groen ${cnt('groen')}\n${namen}` : ''}`;
+    g += `<rect class="hit" x="${L + i * step}" y="${T}" width="${step}" height="${ph}" data-tip="${esc(tip)}"/>`;
+  });
+  const xm = L + (N.signaalMnd + 1) * step;
+  if (N.signaalMnd < M) g += `<line class="marker" x1="${xm}" x2="${xm}" y1="${T - 14}" y2="${T + ph}"/><text class="marker-label" x="${xm - 6}" y="${T - 4}" text-anchor="end">← binnen ${N.signaalMnd} mnd</text>`;
+  return `<div class="legend">
+      <span><i style="background:var(--crit)"></i>Te laat of verlopen</span>
+      <span><i style="background:var(--warn)"></i>Binnen 3 mnd actie</span>
+      <span><i style="background:var(--good)"></i>Plan vastgelegd of nog tijd</span>
+    </div>
+    <svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="Gestapeld staafdiagram: aflopende contracten per maand naar urgentie">${g}</svg>`;
+}
+function watMistInhoud(act) {
+  const gew = META.gewenst_ontbrekend || [];
+  const cnt = fn => act.filter(fn).length;
+  const rij = [
+    [cnt(c => !c.eindD), 'zonder einddatum'],
+    [cnt(c => c.bedrag == null || c.bedrag === 0), 'zonder bedrag (of € 0)'],
+    [cnt(c => !c.cm), 'zonder contractmanager'],
+    [cnt(c => !c.ce), 'zonder contracteigenaar'],
+    [cnt(c => c.conceptOpen), 'met openstaande conceptversie'],
+  ].filter(([n]) => n > 0);
+  return `<div class="grid g2">
+    <div><h3 class="h3s">Wat het dashboard nog mist</h3>
+      <ul class="mist">${gew.map(g => `<li><span class="ico">+</span><span><span class="k">${esc(g)}</span><br><span class="u">nodig voor: ${esc(GEWENST_UITLEG[g] || '')}</span></span></li>`).join('')}</ul></div>
+    <div><h3 class="h3s">Gaten in de huidige data</h3>
+      ${rij.length ? `<ul class="mist">${rij.map(([n, t]) => `<li><span class="ico">!</span><span><b>${n}</b> actieve ${mv(n)} ${t}</span></li>`).join('')}</ul>
+      <p style="margin:10px 0 0"><button class="link" data-goto="data">Toon datakwaliteitssignalen →</button></p>` : '<p class="muted">Geen gaten gevonden.</p>'}</div>
+  </div>`;
+}
+
+/* ======================= Tab: Acties (werklijst) ======================= */
+function actieLijst() {
+  const A = state.acties;
+  const w = A.wie ?? (persoonView() ? state.persoon : '');
+  let l = (w === '' ? sel() : C.filter(c => inScope(c, { rol: false }))).flatMap(c => c._a);
+  if (w === 'MT') l = l.filter(a => a.wie.rol === 'mt');
+  else if (w) l = l.filter(a => a.wie.naam === w);
+  if (A.soort !== 'alle') l = l.filter(a => a.cat === A.soort);
+  l = l.filter(a => A.status === 'alle' || (A.status === 'open' ? a.status !== 'klaar' : a.status === A.status));
+  if (!A.info) l = l.filter(a => a.lvl !== 'info');
+  return { w, lijst: l.sort(vergelijk(false)) };
+}
+function renderActies(el) {
+  const A = state.acties, { w, lijst } = actieLijst();
+  const groepen = groupBy(lijst, bucket);
+  const rij = a => `<tr data-open="${esc(a.c.nr)}">
+    <td>${pill(a.lvl)}</td>
+    <td><b>${esc(a.wat)}</b><small>${esc(a.c.naam)} · ${esc(a.c.nr)} · ${eur(a.c.bedrag)}</small><small>${esc(a.waarom)}</small></td>
+    <td>${wieTekst(a.wie)}</td><td>${wanneer(a.uiterlijk)}</td><td>${statusSelect(a)}</td></tr>`;
+  const kop = '<thead><tr><th>Belang</th><th>Actie</th><th>Wie</th><th>Uiterlijk</th><th>Status</th></tr></thead>';
+  const blokken = Object.keys(BUCKETS).filter(b => groepen.has(b)).map((b, i) => `
+    <h3 class="grp ${b} ${i === 0 ? 'eerste' : ''}">${BUCKETS[b]} <span>(${groepen.get(b).length})</span></h3>
+    <div class="tbl-scroll"><table class="tbl acties-tbl">${kop}<tbody>${groepen.get(b).map(rij).join('')}</tbody></table></div>`).join('');
+  el.innerHTML = `
+    <p class="scope">Werklijst: <b>wat</b> moet er gebeuren, door <b>wie</b> en <b>wanneer</b>? Zet een actie op Opgepakt of Klaar. Klik een regel voor het contract.</p>
+    <section class="card">
+      <div class="toolbar">
+        <label class="field">Wie <select id="a-wie"><option value="">${persoonView() ? 'Iedereen op mijn contracten' : 'Iedereen'}</option><option value="MT" ${w === 'MT' ? 'selected' : ''}>MT</option>${PERSONEN.map(p => `<option ${p === w ? 'selected' : ''}>${esc(p)}</option>`).join('')}</select></label>
+        <label class="field">Soort <select id="a-soort"><option value="alle">Alle soorten</option>${Object.entries(SOORT).map(([s, l]) => `<option value="${s}" ${s === A.soort ? 'selected' : ''}>${l}</option>`).join('')}</select></label>
+        <label class="field">Status <select id="a-status">${[['open', 'Nog te doen'], ['bezig', 'Opgepakt'], ['klaar', 'Klaar'], ['alle', 'Alles']].map(([s, l]) => `<option value="${s}" ${s === A.status ? 'selected' : ''}>${l}</option>`).join('')}</select></label>
+        <label class="field"><input type="checkbox" id="a-info" ${A.info ? 'checked' : ''}> ook info-acties</label>
+        <button class="link" id="a-kopie" type="button">Kopieer lijst</button>
+        <span class="count">${lijst.length} ${mvA(lijst.length)}</span>
+      </div>
+      ${blokken || '<p class="muted">Geen acties met deze filters.</p>'}
+    </section>`;
+  $('#a-wie').addEventListener('change', e => { A.wie = e.target.value; render(); });
+  $('#a-soort').addEventListener('change', e => { A.soort = e.target.value; render(); });
+  $('#a-status').addEventListener('change', e => { A.status = e.target.value; render(); });
+  $('#a-info').addEventListener('change', e => { A.info = e.target.checked; render(); });
+  $('#a-kopie').addEventListener('click', e => {
+    const regels = [`Acties ${w ? 'voor ' + w : scopeNaam()}, peildatum ${fmtD(state.peil)}`];
+    for (const b of Object.keys(BUCKETS)) if (groepen.has(b)) {
+      regels.push('', BUCKETS[b].toUpperCase());
+      for (const a of groepen.get(b)) regels.push(`- ${fmtDkort(a.uiterlijk)} · ${a.wat} · ${a.c.naam} (${a.c.nr}) · ${a.wie.rol === 'mt' ? 'MT' : a.wie.naam}${a.status === 'bezig' ? ' · opgepakt' : ''}`);
+    }
+    kopieer(regels.join('\n'), e.target, 'Kopieer lijst');
+  });
+}
+
+/* ======================= Tab: Contracten ======================= */
+function renderContracten(el) {
+  const L = state.lijst;
+  el.innerHTML = `
+    ${scopeRegel()}
+    <section class="card">
+      <div class="toolbar">
+        <label class="field">Zoek <input type="search" id="zoek" placeholder="naam, nummer, leverancier, persoon" value="${esc(L.zoek)}" size="32"></label>
+        <label class="field">Filter <select id="sigfilter">${Object.entries(FILTERS).map(([key, [lbl]]) => `<option value="${key}" ${key === L.filter ? 'selected' : ''}>${lbl}</option>`).join('')}</select></label>
+        ${L.filter !== 'alle' || L.zoek ? '<button class="link" id="reset-lijst" type="button">Wis zoeken en filter</button>' : ''}
+        <button class="link" id="kolommen" type="button">${L.breed ? 'Minder kolommen' : 'Meer kolommen'}</button>
+        <span class="count" id="lijst-count"></span>
+      </div>
+      <div class="tbl-scroll"><table class="tbl ${L.breed ? '' : 'compact'}" id="lijst-tbl">
+        <thead><tr>
+          <th data-sort="v">Stoplicht</th><th data-sort="naam">Contract</th><th data-sort="lev" class="opt">Leverancier</th><th data-sort="thema" class="opt">Thema</th>
+          <th data-sort="bedrag" class="num">Waarde</th><th data-sort="eind">Einde</th><th data-sort="cm">Contractmanager</th><th>Eerstvolgende actie</th>
+        </tr></thead>
+        <tbody id="lijst-body"></tbody>
+      </table></div>
+    </section>`;
+  vulLijst();
+  $('#zoek').addEventListener('input', e => { L.zoek = e.target.value; vulLijst(); });
+  $('#sigfilter').addEventListener('change', e => { L.filter = e.target.value; render(); });
+  $('#reset-lijst')?.addEventListener('click', () => { L.filter = 'alle'; L.zoek = ''; render(); });
+  $('#kolommen').addEventListener('click', e => {
+    L.breed = !L.breed; $('#lijst-tbl').classList.toggle('compact', !L.breed);
+    e.target.textContent = L.breed ? 'Minder kolommen' : 'Meer kolommen';
+  });
+  $$('th[data-sort]', el).forEach(th => th.addEventListener('click', () => {
+    L.dir = L.sort === th.dataset.sort ? -L.dir : 1; L.sort = th.dataset.sort; vulLijst();
+  }));
+}
+function vulLijst() {
+  const L = state.lijst, q = L.zoek.trim().toLowerCase();
+  const orde = { rood: 0, geel: 1, groen: 2, inactief: 3 };
+  const key = {
+    v: c => orde[c._v], naam: c => c.naam || '', lev: c => c.lev || '', thema: c => c.thema,
+    bedrag: c => c.bedrag ?? -1, eind: c => c.eindD ? c.eindD.getTime() : Infinity, cm: c => c.cm || 'zzz',
+  }[L.sort];
+  const lijst = sel().filter(FILTERS[L.filter][1])
+    .filter(c => !q || [c.naam, c.nr, c.lev, c.oms, c.cm, c.cb, c.ce].some(x => x && String(x).toLowerCase().includes(q)))
+    .sort((a, b) => { const x = key(a), y = key(b); return (typeof x === 'string' ? x.localeCompare(y, 'nl') : x - y) * L.dir; });
+  $('#lijst-count').textContent = `${lijst.length} ${mv(lijst.length)} · ${eur(sum(lijst, c => c.bedrag))}`;
+  $('#lijst-body').innerHTML = lijst.map(c => {
+    const a = c._open[0];
+    const m = c.eindD ? mndTussen(state.peil, c.eindD) : null;
+    const plan = state.plan[c.nr];
+    return `<tr data-open="${esc(c.nr)}">
+      <td>${dot(c._v)}${LICHT[c._v]}</td>
+      <td><b>${esc(c.naam)}</b><small>${esc(c.nr)} · ${esc(c.type || '')}</small></td>
+      <td class="opt">${esc(c.lev || '—')}</td><td class="opt">${esc(c.thema)}</td>
+      <td class="num">${eur(c.bedrag)}</td>
+      <td>${fmtD(c.eindD)}<small>${m == null ? '' : m < 0 ? 'verlopen' : 'over ' + fmtMnd(m)}${plan ? ' · ' + esc(PLAN[plan].toLowerCase()) : ''}</small></td>
+      <td>${c.cm ? esc(c.cm) : '<span class="pill rood">niet belegd</span>'}</td>
+      <td>${a ? `${pill(a.lvl)} ${esc(a.wat)}<small>${wieKort(a.wie)} · uiterlijk ${fmtD(a.uiterlijk)}${c._open.length > 1 ? ` · +${c._open.length - 1} meer` : ''}</small>` : '<span class="muted">Geen acties</span>'}</td>
+    </tr>`;
+  }).join('') || '<tr><td colspan="8" class="muted">Geen contracten met deze filters.</td></tr>';
+}
+
+/* ======================= Tab: Per thema ======================= */
+function koppelkansen(lijst) {
+  const out = [], horizon = addMnd(state.peil, 36);
+  for (const [thema, l0] of groupBy(lijst, c => c.thema)) {
+    let beste = null;
+    const l = l0.filter(c => c.eindD && c.eindD >= state.peil && c.eindD <= horizon).sort((a, b) => a.eindD - b.eindD);
+    let i = 0;
+    while (i < l.length) {
+      let j = i;
+      while (j + 1 < l.length && mndTussen(l[i].eindD, l[j + 1].eindD) <= 6) j++;
+      if (j - i >= 2 && (!beste || j + 1 - i > beste.g.length)) beste = { thema, g: l.slice(i, j + 1) };
+      i = j > i ? j + 1 : i + 1;
+    }
+    if (beste) out.push(beste);
+  }
+  return out.sort((a, b) => b.g.length - a.g.length);
+}
+function renderThema(el) {
+  const basis = actief(sel({ thema: false }));
+  const rows = [...groupBy(basis, c => c.thema)].map(([t, l]) => ({
+    t, n: l.length, w: sum(l, c => c.bedrag),
+    afl: l.filter(isAflopend).length, telaat: l.filter(FILTERS.telaat[1]).length + l.filter(FILTERS.verlopen[1]).length,
+    rollen: pct(l.filter(c => c.ce && c.cm && c.cb).length, l.length), licht: portfolioLicht(l),
+  })).sort((a, b) => b.w - a.w);
+  const maxW = Math.max(1, ...rows.map(r => r.w));
+  const kansen = koppelkansen(actief(sel()));
+  const levs = [...groupBy(actief(sel()), c => c.lev)].filter(([key, v]) => key && v.length >= 3).sort((a, b) => b[1].length - a[1].length).slice(0, 4);
+  el.innerHTML = `
+    <p class="scope">Contracten per thema (kolom Cluster). Klik een thema voor de contracten.</p>
+    <section class="card">
+      <div class="tbl-scroll"><table class="tbl">
+        <thead><tr><th>Thema</th><th>Stoplicht</th><th class="num">Actief</th><th>Waarde</th><th class="num">Loopt af ≤ ${state.norm.signaalMnd} mnd</th><th class="num">Te laat</th><th class="num">Rollen belegd</th></tr></thead>
+        <tbody>${rows.map(r => `<tr data-thema="${esc(r.t)}"><td><b>${esc(r.t)}</b></td><td>${dot(r.licht)}${LICHT[r.licht]}</td><td class="num">${r.n}</td>
+          <td><div class="inbar"><div class="b" style="width:${Math.max(1, r.w / maxW * 160)}px"></div><span class="num">${eur(r.w)}</span></div></td>
+          <td class="num">${r.afl}</td><td class="num">${r.telaat ? `<span class="laat">${r.telaat}</span>` : 0}</td><td class="num">${r.rollen}%</td></tr>`).join('')}</tbody>
+      </table></div>
+    </section>
+    <details class="card mt16 more">
+      <summary><b>Koppelkansen</b><span class="muted">· ${kansen.length} gevonden</span></summary>
+      <p class="lead">Per thema de grootste groep van drie of meer contracten die binnen 6 maanden na elkaar aflopen (komende 3 jaar). Eén gezamenlijke (her)aanbesteding kan tijd en geld schelen.</p>
+      <div class="kansen">${kansen.map(kk => `<div class="kans"><h3>${esc(kk.thema)}: ${kk.g.length} contracten</h3>
+        <p>Aflopend tussen ${fmtD(kk.g[0].eindD)} en ${fmtD(kk.g[kk.g.length - 1].eindD)} · samen ${eur(sum(kk.g, c => c.bedrag))}</p>
+        <ul>${kk.g.map(c => `<li data-open="${esc(c.nr)}">${esc(c.naam)} <span class="muted">(${fmtDkort(c.eindD)})</span></li>`).join('')}</ul></div>`).join('') || '<p class="muted">Geen koppelkansen in deze selectie.</p>'}</div>
+    </details>
+    ${levs.length ? `<details class="card mt16 more"><summary><b>Leveranciers met meerdere contracten</b><span class="muted">· ${levs.length}</span></summary>
+      <p class="lead">Kans voor één leveranciersgesprek of bundeling.</p>
+      <div class="kansen">${levs.map(([lev, l]) => `<div class="kans"><h3>${esc(lev)}</h3><p>${l.length} actieve contracten · ${eur(sum(l, c => c.bedrag))}</p>
+        <ul>${l.slice(0, 5).map(c => `<li data-open="${esc(c.nr)}">${esc(c.naam)}</li>`).join('')}${l.length > 5 ? `<li class="muted">… en ${l.length - 5} meer</li>` : ''}</ul></div>`).join('')}</div></details>` : ''}`;
+}
+
+/* ======================= Tab: Werkverdeling ======================= */
+function renderWerk(el) {
+  const rol = state.werkRol;
+  const norm = rol === 'cm' ? state.norm.normCM : rol === 'cb' ? state.norm.normCB : null;
+  const basis = actief(sel({ rol: false }));
+  const eigen = groupBy(basis.flatMap(c => c._open).filter(a => a.lvl !== 'info'), a => a.wie.naam);
+  const groepen = [...groupBy(basis, c => c[rol] || null)];
+  const personen = groepen.filter(([p]) => p).map(([p, l]) => {
+    const acts = eigen.get(p) || [];
+    return { p, n: l.length, w: sum(l, c => c.bedrag), acts: acts.length, laat: acts.filter(a => bucket(a) === 'telaat').length };
+  }).sort((a, b) => b.n - a.n);
+  const leeg = (groepen.find(([p]) => !p) || [null, []])[1];
+  const max = Math.max(1, norm || 0, leeg.length, ...personen.map(x => x.n)) * 1.08;
+  const kc = capaciteit(rol, basis);
+  const mtActs = (eigen.get(null) || []).length;
+  const rij = x => `
+    <div class="nm" data-persoon="${esc(x.p)}" title="Bekijk dashboard als ${esc(x.p)}">${esc(x.p)}</div>
+    <div class="track">${norm ? `<div class="norm" style="left:${norm / max * 100}%"></div>` : ''}<div class="bar ${norm && x.n > norm ? 'over' : ''}" style="width:${x.n / max * 100}%" data-tip="${esc(`${x.p}\n${x.n} actieve contracten · ${eur(x.w)}\n${x.acts} open acties, ${x.laat} te laat`)}"></div></div>
+    <div class="info"><b>${x.n}</b> contr. · ${eur(x.w)} · ${x.acts} ${mvA(x.acts)}${x.laat ? ` · <span class="pill rood">${x.laat} te laat</span>` : ''}${norm && x.n > norm ? ' · <span class="pill rood">▲ boven norm</span>' : ''}</div>
+    <div><label><input type="checkbox" data-vertrek="${esc(x.p)}" ${state.vertrek.has(x.p) ? 'checked' : ''}> vertrekt</label></div>`;
+  el.innerHTML = `
+    <p class="scope">Wie heeft hoeveel contracten en acties? Klik een naam om het dashboard als die persoon te bekijken. Vink <b>vertrekt</b> aan om de contracten van die persoon te laten signaleren.</p>
+    <section class="card">
+      <div class="toolbar">
+        <div class="seg" role="group">${Object.entries(ROL).map(([key, v]) => `<button type="button" data-werkrol="${key}" aria-pressed="${key === rol}">${v}</button>`).join('')}</div>
+        <span class="count">${personen.length} personen · ${basis.length} actieve contracten</span>
+      </div>
+      ${kc ? `<div class="cap">
+        <div><span class="k">Nodig bij norm ${kc.norm}</span><b>${kc.nodig}</b> ${ROLMV[rol]}</div>
+        <div><span class="k">Beschikbaar</span><b>${kc.blijft}</b>${kc.vertrekt ? ` <span class="muted">+${kc.vertrekt} vertrekt</span>` : ''}</div>
+        <div><span class="k">${kc.tekort > 0 ? 'Tekort' : 'Ruimte'}</span><b class="${kc.tekort > 0 ? 'laat' : ''}">${Math.abs(kc.tekort)}</b> ${kc.tekort > 0 ? 'personen' : ''}</div>
+        <div><span class="k">Zonder ${ROL[rol].toLowerCase()}</span><b class="${kc.zonder ? 'laat' : ''}">${kc.zonder}</b> contracten</div>
+      </div>
+      <p class="note" style="margin:0 0 4px">${capTekst(kc)} Indicatie: één persoon telt als volledige inzet op contractmanagement. Norm aanpassen via <button class="link" id="naar-normen" type="button">Normen</button>.</p>`
+      : `<p class="note" style="margin:0">Contracteigenaren nemen de besluiten. ${mtActs ? `<b>${mtActs}</b> ${mvA(mtActs)} liggen bij het MT, omdat er geen eigenaar is.` : ''}</p>`}
+      <div class="werk">
+        <div class="h">${ROL[rol]}</div><div class="h">Actieve contracten</div><div class="h">Contracten · waarde · open acties</div><div class="h">Signaal</div>
+        ${personen.map(rij).join('')}
+        ${leeg.length ? `<div class="nm" style="color:var(--crit);cursor:default">Niet belegd</div>
+          <div class="track"><div class="bar leeg" style="width:${leeg.length / max * 100}%"></div></div>
+          <div class="info"><b>${leeg.length}</b> · ${eur(sum(leeg, c => c.bedrag))} <button class="link" data-goto="rol_${rol}" type="button">toon →</button></div><div></div>` : ''}
+      </div>
+      ${norm ? '<div class="werk-legend"><span><i></i>norm (instelbaar)</span></div>' : ''}
+    </section>`;
+  $$('[data-werkrol]', el).forEach(b => b.addEventListener('click', () => { state.werkRol = b.dataset.werkrol; render(); }));
+  $$('[data-vertrek]', el).forEach(b => b.addEventListener('change', () => {
+    if (b.checked) state.vertrek.add(b.dataset.vertrek); else state.vertrek.delete(b.dataset.vertrek);
+    store.set('vertrek', [...state.vertrek]); render();
+  }));
+  $$('[data-persoon]', el).forEach(b => b.addEventListener('click', () => {
+    state.rol = rol; state.persoon = b.dataset.persoon; state.acties.wie = null; state.tab = 'overzicht'; syncFilters(); render();
+  }));
+  $('#naar-normen')?.addEventListener('click', openNormen);
+}
+
+/* ======================= Tab: Uitleg ======================= */
+function renderHoe(el) {
+  const N = state.norm;
+  el.innerHTML = `
+    <section class="card prose">
+      <h2>Zo werkt het prototype</h2>
+      <div class="flow">
+        <div class="stap"><b>1 · Export</b>Elke maand de contractexport (Excel, 15 kolommen) uit het contractsysteem.</div><div class="pijl">→</div>
+        <div class="stap"><b>2 · Bouwen</b><code>uv run bouw_dashboard.py export.xlsx</code> maakt één HTML-bestand. Draait lokaal; de data gaat niet over het netwerk.</div><div class="pijl">→</div>
+        <div class="stap"><b>3 · Acties</b>Vaste, controleerbare regels maken van elk signaal een actie: wat, wie, uiterlijk.</div><div class="pijl">→</div>
+        <div class="stap"><b>4 · Opvolgen</b>Mensen zetten acties op Opgepakt of Klaar en vullen aan wat de export mist (plan bij afloop, kwaliteit).</div><div class="pijl">→</div>
+        <div class="stap"><b>5 · Delen</b>Overzicht per rol, maandbericht per persoon, printbaar voor het MT.</div>
+      </div>
+      <h3>Wie gebruikt wat?</h3>
+      <table class="tbl regels"><tbody>
+        <tr><td>MT</td><td>Overzicht: vier stoplichten, grootste risico's en capaciteit. Maandbericht als agendapunt.</td></tr>
+        <tr><td>Contracteigenaar</td><td>Bekijk als jezelf. Jij besluit over verlengen en wijst rollen toe. Je krijgt een maandbericht met jouw besluiten.</td></tr>
+        <tr><td>Contractmanager</td><td>Tab Acties is je werklijst. Leg bij aflopende contracten het plan vast en zet acties op Opgepakt of Klaar.</td></tr>
+        <tr><td>Contractbeheerder</td><td>Acties met soort Datakwaliteit of verlopen status: werk ze bij in het contractsysteem.</td></tr>
+      </tbody></table>
+      <h3>Rekenregels: van signaal naar actie</h3>
+      <table class="tbl regels"><thead><tr><th>Signaal</th><th>Actie en termijn</th><th>Wie</th></tr></thead><tbody>
+        <tr><td>Aflopend, geen plan</td><td>Kies verlengen of aanbesteden. Uiterlijk: einddatum min doorlooptijd (± ${N.doorloopEU} mnd vanaf ${eur(N.drempel)}, anders ± ${N.doorloopNat} mnd). Voorbij = rood, binnen 3 mnd = geel.</td><td>Contractmanager</td></tr>
+        <tr><td>Verlengingsoptie, geen besluit</td><td>Besluit over verlenging, uiterlijk ${N.besluitMnd} mnd vóór einde.</td><td>Contracteigenaar</td></tr>
+        <tr><td>Verlopen maar actief</td><td>Status bijwerken of verlenging vastleggen. Altijd rood.</td><td>Contractbeheerder</td></tr>
+        <tr><td>Rol niet belegd</td><td>Rol toewijzen, deze maand. Eigenaar of manager ontbreekt = rood.</td><td>Eigenaar (of MT)</td></tr>
+        <tr><td>Medewerker vertrekt</td><td>Overdracht regelen, deze maand.</td><td>Eigenaar (of MT)</td></tr>
+        <tr><td>Functiescheiding</td><td>Beheer bij een ander beleggen, binnen 3 mnd.</td><td>Eigenaar</td></tr>
+        <tr><td>Waardestijging > ${N.wijzigGrens}%</td><td>Toetsen aan Aanbestedingswet art. 2.163a–g, binnen 3 mnd.</td><td>Contractmanager</td></tr>
+        <tr><td>Raamovereenkomst > ${fmtMnd(N.maxLooptijdMnd)}</td><td>Motivering vastleggen (art. 2.140), binnen 3 mnd.</td><td>Contractmanager</td></tr>
+        <tr><td>Kwaliteit onvoldoende</td><td>Leverancier aanspreken, afspraken vastleggen, binnen 1 mnd. Zie BW boek 6 bij aanhoudend tekortschieten.</td><td>Contractmanager</td></tr>
+        <tr><td>Datakwaliteit</td><td>Einddatum, bedrag of conceptversie bijwerken in het contractsysteem.</td><td>Contractbeheerder</td></tr>
+      </tbody></table>
+      <p class="muted">Een contract kleurt naar zijn zwaarste open actie. Een stoplicht in het overzicht wordt rood als ≥ ${N.roodAandeel}% van de contracten rood is. Wettelijke signalen zijn een hulpmiddel, geen juridisch oordeel: check bij Inkoop of Juridische Zaken.</p>
+      <h3>Waar zit AI in de volgende stap?</h3>
+      <ul>
+        <li><b>Contractteksten uitlezen.</b> Verlengingsopties, opzegtermijnen, KPI-afspraken en procedure uit de contract-PDF's halen. Dat zijn precies de gegevens die nu met de hand worden aangevuld.</li>
+        <li><b>Maandbericht in gewone taal.</b> Een taalmodel schrijft per persoon het bericht, met bronverwijzing per zin.</li>
+        <li><b>Thema's herkennen.</b> Contracten indelen op onderwerp vanuit de omschrijving, voor koppelkansen over clusters heen.</li>
+        <li><b>Wettoets.</b> Signalen koppelen aan Aanbestedingswet en Burgerlijk Wetboek zodra procedure en clausules bekend zijn.</li>
+      </ul>
+      <h3>Nog niet in het prototype</h3>
+      <ul>
+        <li>Vergelijking met de vorige maand (wat is nieuw, wat is opgelost).</li>
+        <li>Gedeelde opslag van acties, plannen en oordelen (nu alleen in deze browser), bijvoorbeeld in een SharePoint-lijst.</li>
+        <li>Automatisch versturen van het maandbericht (bijvoorbeeld met Power Automate).</li>
+      </ul>
+      <h3>Aanvullingen in deze browser</h3>
+      <p>Nu vastgelegd: ${Object.keys(state.plan).length} plannen bij afloop, ${Object.keys(state.status).length} actiestatussen, ${Object.keys(state.kwaliteit).length} kwaliteitsoordelen, ${Object.keys(state.toewijzing).length} toewijzingen en ${state.vertrek.size} vertrekkers.</p>
+      <p>${META.dummy ? '<button class="btn" type="button" data-demo="vul">Demo: simuleer een maand gebruik</button> ' : ''}<button class="btn" type="button" data-demo="wis">Wis alle aanvullingen</button></p>
+      <h3>Privacy</h3>
+      <p>${META.dummy ? 'Dit prototype draait op <b>fictieve dummydata</b>: alle namen, leveranciers, bedragen en nummers zijn verzonnen. ' : ''}Het dashboard is één los HTML-bestand. Er wordt niets verstuurd.</p>
+    </section>`;
+}
+
+/* ======================= Contractdetail ======================= */
+function tramSvg(c) {
+  if (!c.startD || !c.eindD) return '<p class="muted">Start- of einddatum ontbreekt.</p>';
+  const W = 560, H = 132, x0 = 20, x1 = W - 20, y = 68;
+  const tot = c.eindD - c.startD || 1;
+  const pos = d => x0 + Math.max(0, Math.min(1, (d - c.startD) / tot)) * (x1 - x0);
+  const frac = (state.peil - c.startD) / tot, xp = pos(state.peil);
+  const aanb = addMnd(c.eindD, -doorloop(c)), xa = pos(aanb);
+  let s = '';
+  for (let x = x0; x <= x1; x += 10) s += `<line x1="${x}" x2="${x}" y1="${y - 5}" y2="${y + 5}" stroke="var(--grid)" stroke-width="2"/>`;
+  s += `<line x1="${x0}" x2="${x1}" y1="${y}" y2="${y}" stroke="var(--axis)" stroke-width="4" stroke-linecap="round"/>`;
+  s += `<line x1="${x0}" x2="${xp}" y1="${y}" y2="${y}" stroke="var(--series)" stroke-width="4" stroke-linecap="round"/>`;
+  const halte = (x, kleur) => `<circle cx="${x}" cy="${y}" r="6" fill="var(--surface)" stroke="${kleur}" stroke-width="3"/>`;
+  s += halte(x0, 'var(--ink-2)') + halte(x1, 'var(--ink-2)');
+  if (aanb > c.startD) s += halte(xa, aanb < state.peil ? 'var(--crit)' : 'var(--warn)') + `<text class="lbl" x="${Math.max(x0 + 115, Math.min(x1 - 115, xa))}" y="${y + 44}" text-anchor="middle">Uiterste start aanbesteding · ${fmtD(aanb)}</text>`;
+  s += `<text class="lbl" x="${x0}" y="${y + 24}">Start · ${fmtD(c.startD)}</text><text class="lbl" x="${x1}" y="${y + 24}" text-anchor="end">Einde · ${fmtD(c.eindD)}</text>`;
+  const tx = Math.max(x0 + 2, Math.min(x1 - 46, xp - 23));
+  s += `<g transform="translate(${tx},${y - 30})" aria-hidden="true">
+    <path d="M14,0 L22,-8 L30,0" fill="none" stroke="var(--ink-2)" stroke-width="1.5"/>
+    <rect x="0" y="0" width="46" height="20" rx="6" fill="var(--brand)"/>
+    <rect x="4" y="4" width="8" height="7" rx="1.5" fill="#fff" opacity=".9"/><rect x="15" y="4" width="8" height="7" rx="1.5" fill="#fff" opacity=".9"/>
+    <rect x="26" y="4" width="8" height="7" rx="1.5" fill="#fff" opacity=".9"/><rect x="37" y="4" width="6" height="7" rx="1.5" fill="#fff" opacity=".9"/>
+    <circle cx="10" cy="22" r="3" fill="var(--ink)"/><circle cx="36" cy="22" r="3" fill="var(--ink)"/></g>`;
+  const lbl = frac > 1 ? 'Voorbij eindhalte: verlopen' : frac < 0 ? 'Nog niet vertrokken' : `Vandaag · ${Math.round(frac * 100)}% van de looptijd`;
+  s += `<text class="lbl-b" x="${Math.max(x0 + 60, Math.min(x1 - 60, xp))}" y="${y - 48}" text-anchor="middle">${lbl}</text>`;
+  return `<svg class="tram" viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="Voortgang looptijd: ${esc(lbl)}">${s}</svg>`;
+}
+function openContract(nr, { focus = true } = {}) {
+  const c = C.find(x => x.nr === nr);
+  if (!c) return;
+  state.open = nr;
+  const plan = state.plan[c.nr] || 'onbekend';
+  const kw = state.kwaliteit[c.nr] || {};
+  const m = c.eindD ? mndTussen(state.peil, c.eindD) : null;
+  const rolKaart = rk => {
+    const p = c[rk];
+    if (!p) return `<div class="rol leeg"><span>${ROL[rk]}</span>Niet belegd</div>`;
+    const tags = [];
+    if (state.vertrek.has(p)) tags.push('vertrekt');
+    if (c.prev && c.prev[rk] && c.prev[rk] !== p) tags.push('nieuw sinds v' + c.versie + ' (was ' + c.prev[rk] + ')');
+    return `<div class="rol"><span>${ROL[rk]}</span><b>${esc(p)}</b>${tags.map(t => `<br><span class="tag">${esc(t)}</span>`).join('')}</div>`;
+  };
+  const wieSelect = a => `<select data-wie="${esc(a.id)}" aria-label="Wie">
+    <option value="__auto" ${!state.toewijzing[a.id] ? 'selected' : ''}>${a.auto.rol === 'mt' ? 'MT' : esc(a.auto.naam)} (standaard)</option>
+    <option value="MT" ${state.toewijzing[a.id] === 'MT' ? 'selected' : ''}>MT</option>
+    ${PERSONEN.map(p => `<option ${state.toewijzing[a.id] === p ? 'selected' : ''}>${esc(p)}</option>`).join('')}</select>`;
+  const vs = c.versies;
+  const velden = [['vstatus', 'Status'], ['bedrag', 'Bedrag'], ['eind', 'Einde'], ['cm', 'Contractmgr'], ['cb', 'Beheerder'], ['ce', 'Eigenaar']];
+  const fmtVeld = (key, v) => key === 'bedrag' ? eur(v) : key === 'eind' ? fmtDkort(parseDate(v)) : esc(v ?? '—');
+  $('#drawer-inner').innerHTML = `
+    <button class="btn close" id="drawer-sluit" type="button">Sluiten ✕</button>
+    <div class="eyebrow">${esc(c.thema)}</div>
+    <h2>${esc(c.naam)}</h2>
+    <div class="muted">${esc(c.nr)} · ${esc(c.lev || '')}</div>
+    <div class="kv">
+      <div><span class="k">Stoplicht</span>${dot(c._v)}${LICHT[c._v]}</div>
+      <div><span class="k">Waarde</span>${eur(c.bedrag)}</div>
+      <div><span class="k">Einde</span>${fmtD(c.eindD)}${m == null ? '' : m < 0 ? ' · verlopen' : ` · over ${fmtMnd(m)}`}</div>
+      <div><span class="k">Aanbesteding (geschat)</span>${isEU(c) ? `Europees · ± ${state.norm.doorloopEU} mnd` : `Onder de drempel · ± ${state.norm.doorloopNat} mnd`}</div>
+    </div>
+    <h3>Wat moet er gebeuren?</h3>
+    ${c._a.length ? `<ul class="acts">${c._a.map(a => `<li class="${a.status}">${pill(a.lvl)}<div>
+        <b>${esc(a.wat)}</b><div class="w">${esc(a.waarom)}</div>
+        <div class="ctl"><span>Wie: ${wieSelect(a)}</span><span>Uiterlijk: <b>${fmtD(a.uiterlijk)}</b>${a.uiterlijk && a.uiterlijk < state.peil ? ' <span class="laat">te laat</span>' : ''}</span><span>Status: ${statusSelect(a)}</span></div>
+        ${a.bron ? `<a class="bronlink" href="${a.bron.url}" target="_blank" rel="noopener">Bron: ${esc(a.bron.label)} ↗</a>` : ''}
+      </div></li>`).join('')}</ul>` : `<p>${pill('groen')} Niets te doen.</p>`}
+    <h3>Plan bij afloop</h3>
+    <div class="ctl-row"><select id="plan" aria-label="Plan bij afloop">${Object.entries(PLAN).map(([key, v]) => `<option value="${key}" ${key === plan ? 'selected' : ''}>${v}</option>`).join('')}</select>
+      <span class="muted">Staat niet in de export. Vastleggen maakt de actie concreet.</span></div>
+    <h3>Voortgang</h3>
+    ${tramSvg(c)}
+    <h3>Rollen</h3>
+    <div class="rollen">${rolKaart('ce')}${rolKaart('cm')}${rolKaart('cb')}</div>
+    <h3>Kwaliteit</h3>
+    <div class="ctl-row">
+      <label>Oordeel <select id="k-oordeel">${Object.entries(OORDEEL).map(([key, v]) => `<option value="${key}" ${key === (kw.oordeel || '') ? 'selected' : ''}>${v}</option>`).join('')}</select></label>
+      <label>Laatste voortgangsgesprek <input type="date" id="k-gesprek" value="${esc(kw.gesprek || '')}"></label>
+    </div>
+    <p class="note">Met de hand, tot KPI-scores in de export zitten.</p>
+    <details class="more">
+      <summary>Meer over dit contract</summary>
+      <div class="kv">
+        <div><span class="k">Omschrijving</span>${esc(c.oms || '—')}</div>
+        <div><span class="k">Contracttype</span>${esc(c.type || '—')}</div>
+        <div><span class="k">Exacte waarde</span>${eurVol(c.bedrag)}</div>
+        <div><span class="k">Status</span>${esc(c.status)} · versie ${c.versie ?? '—'} (${esc(c.vstatus || '')})</div>
+      </div>
+      <h3>Versiegeschiedenis</h3>
+      <div class="tbl-scroll"><table class="tbl"><thead><tr><th>Versie</th>${velden.map(([, l]) => `<th>${l}</th>`).join('')}</tr></thead>
+        <tbody>${vs.map((v, i) => `<tr style="cursor:default"><td>${v.versie ?? '—'}</td>${velden.map(([key]) => `<td class="${i > 0 && String(vs[i - 1][key]) !== String(v[key]) ? 'chg' : ''}">${fmtVeld(key, v[key])}</td>`).join('')}</tr>`).join('')}</tbody></table></div>
+      <p class="bron">Bron: ${esc(META.bron)}, Excel-regel ${vs.map(v => v.regel).join(', ')}.</p>
+    </details>`;
+  $('#drawer').classList.add('open');
+  $('#scrim').hidden = false;
+  $('#drawer-sluit').addEventListener('click', sluitContract);
+  if (focus) $('#drawer-sluit').focus({ preventScroll: true });
+}
+/* Demo: deterministische voorbeeld-aanvullingen (alleen bij dummydata) */
+function hash01(s) { let h = 2166136261; for (const ch of s) { h ^= ch.charCodeAt(0); h = Math.imul(h, 16777619); } return (h >>> 0) / 4294967296; }
+function bewaarAanvullingen() {
+  store.set('plan', state.plan); store.set('status', state.status); store.set('kwaliteit', state.kwaliteit);
+  store.set('toewijzing', state.toewijzing); store.set('vertrek', [...state.vertrek]);
+}
+function vulVoorbeeld() {
+  const plan = {}, kwaliteit = {};
+  for (const c of C) {
+    if (c.status !== 'Actief') continue;
+    const r = hash01(c.nr), r2 = hash01(c.nr + 'k'), r3 = hash01(c.nr + 'g');
+    if (isAflopend(c)) {
+      if (r < 0.25) plan[c.nr] = 'aanbesteding';
+      else if (r < 0.45) plan[c.nr] = 'verlengen';
+      else if (r < 0.55) plan[c.nr] = 'beeindigen';
+      else if (r < 0.68) plan[c.nr] = 'optie';
+      else if (r < 0.75) plan[c.nr] = 'geenoptie';
+    }
+    if (r2 < 0.45) kwaliteit[c.nr] = { oordeel: r2 < 0.04 ? 'onvoldoende' : r2 < 0.11 ? 'aandacht' : 'goed', gesprek: isoDate(addMnd(state.peil, -(1 + Math.floor(r3 * 4)))) };
+  }
+  state.plan = plan; state.kwaliteit = kwaliteit; state.status = {};
+  herbereken();
+  for (const c of C) for (const a of c._a) { const r = hash01(a.id); if (a.lvl !== 'info' && r < 0.25) state.status[a.id] = r < 0.08 ? 'klaar' : 'bezig'; }
+  bewaarAanvullingen(); render();
+}
+function wisAanvullingen() {
+  state.plan = {}; state.status = {}; state.kwaliteit = {}; state.toewijzing = {}; state.vertrek = new Set();
+  bewaarAanvullingen(); render();
+}
+function sluitContract() { state.open = null; $('#drawer').classList.remove('open'); $('#scrim').hidden = true; }
+function zetStatus(id, v) { if (v === 'open') delete state.status[id]; else state.status[id] = v; store.set('status', state.status); }
+
+/* ======================= Maandbericht & normen ======================= */
+function maandbericht() {
+  const N = state.norm, act = actief(sel());
+  const maand = state.peil.toLocaleDateString('nl-NL', { month: 'long', year: 'numeric' });
+  const lijst = actiesInBeeld().sort(vergelijk(!persoonView()));
+  const groepen = groupBy(lijst, bucket);
+  const f = key => act.filter(FILTERS[key][1]);
+  const regels = [`Maandoverzicht contracten ${maand}: ${scopeNaam()}`, `Peildatum ${fmtD(state.peil)} · bron: ${META.bron}`, ''];
+  if (!persoonView()) {
+    const kc = capaciteit('cm', act);
+    regels.push('KERNCIJFERS',
+      `- ${act.length} actieve contracten, totale waarde ${eur(sum(act, c => c.bedrag))}.`,
+      `- ${f('aflopend').length} lopen af binnen ${N.signaalMnd} maanden; ${f('zonderplan').length} daarvan zonder plan (${eur(sum(f('zonderplan'), c => c.bedrag))}).`,
+      `- ${f('telaat').length + f('verlopen').length} contracten zijn te laat met aanbesteden, besluiten of status bijwerken.`,
+      `- ${f('rol').length} contracten missen een rol.`,
+      kc ? `- Capaciteit: ${capTekst(kc).replace(/<[^>]+>/g, '')}` : '', '');
+  }
+  regels.push(persoonView() ? 'JOUW ACTIES' : 'ACTIES (urgentste eerst)');
+  if (!lijst.length) regels.push('Geen open acties.');
+  let teller = 0;
+  for (const b of Object.keys(BUCKETS)) if (groepen.has(b) && teller < 15) {
+    regels.push(`${BUCKETS[b]}:`);
+    for (const a of groepen.get(b)) { if (teller++ >= 15) break; regels.push(`- ${a.wat}: ${a.c.naam} (${a.c.nr}), uiterlijk ${fmtD(a.uiterlijk)}${persoonView() ? '' : `, ${a.wie.rol === 'mt' ? 'MT' : a.wie.naam}`}`); }
+  }
+  if (lijst.length > 15) regels.push(`… en ${lijst.length - 15} meer in het dashboard.`);
+  regels.push('', 'Open het dashboard voor details, bronnen en om acties af te vinken.', 'Automatisch samengesteld uit de contractexport. Controleer bij twijfel de bron.');
+  return { onderwerp: `Contracten ${maand}: ${lijst.length} ${mvA(lijst.length)} voor ${scopeNaam()}`, tekst: regels.join('\n') };
+}
+function openBericht() {
+  const { onderwerp, tekst } = maandbericht();
+  $('#bericht-sub').textContent = `Voor ${scopeNaam()}. Kies bij “Bekijk als” een persoon voor een persoonlijk bericht met alleen diens acties.`;
+  $('#bericht-tekst').value = tekst;
+  $('#bericht-mail').href = `mailto:?subject=${encodeURIComponent(onderwerp)}&body=${encodeURIComponent(tekst)}`;
+  $('#dlg-bericht').showModal();
+}
+function openNormen() {
+  $('#normen-rows').innerHTML = Object.entries(NORM_LABEL).map(([key, [l, u]]) =>
+    `<label class="row"><span>${l}<small>${u}</small></span><input type="number" min="0" step="${key === 'drempel' ? 1000 : 1}" name="${key}" value="${state.norm[key]}"></label>`).join('');
+  $('#dlg-normen').showModal();
+}
+
+/* ======================= Filters, render, events ======================= */
+function syncFilters() {
+  $('#f-rol').value = state.rol;
+  const ps = $('#f-persoon');
+  $('#f-persoon-wrap').hidden = state.rol === 'mt';
+  if (state.rol !== 'mt') {
+    const namen = [...new Set(C.map(c => c[state.rol]).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'nl'));
+    ps.innerHTML = `<option value="">Kies je naam…</option>` + namen.map(n => `<option ${n === state.persoon ? 'selected' : ''}>${esc(n)}</option>`).join('');
+  }
+  $('#rolhint').textContent = ROLTAAK[state.rol];
+  $('#f-peil').value = isoDate(state.peil);
+  $('#f-inactief').checked = state.inactief;
+}
+function renderChips() {
+  $('#f-themas').innerHTML = `<button class="chip" type="button" data-chip="" aria-pressed="${state.themas.size === 0}">Alle thema's</button>` +
+    THEMAS.map(t => `<button class="chip" type="button" data-chip="${esc(t)}" aria-pressed="${state.themas.has(t)}">${esc(t)}</button>`).join('');
+}
+function render() {
+  herbereken();
+  $('#badge').textContent = META.dummy ? 'Prototype · fictieve data' : 'Prototype';
+  const nAanv = Object.keys(state.plan).length + Object.keys(state.status).length + Object.keys(state.kwaliteit).length + Object.keys(state.toewijzing).length + state.vertrek.size;
+  $('#meta').textContent = `Bron: ${META.bron} · gebouwd ${fmtD(parseDate(META.gebouwd))}${nAanv ? ` · ${nAanv} aanvullingen in deze browser` : ''}`;
+  const nA = actiesInBeeld().length;
+  $('#n-acties').textContent = nA; $('#n-acties').hidden = !nA;
+  $('#n-contracten').textContent = sel().length;
+  const nf = state.themas.size + (state.inactief ? 1 : 0) + (isoDate(state.peil) !== META.peildatum ? 1 : 0);
+  $('#btn-filters').textContent = nf ? `Meer filters (${nf})` : 'Meer filters';
+  renderChips();
+  $$('.tab').forEach(t => t.setAttribute('aria-selected', String(t.dataset.tab === state.tab)));
+  ({ overzicht: renderOverzicht, acties: renderActies, contracten: renderContracten, thema: renderThema, werk: renderWerk, hoe: renderHoe }[state.tab] || renderOverzicht)($('#main'));
+}
+function gaNaar(tab) { state.tab = tab; store.set('tab', tab); render(); window.scrollTo({ top: 0 }); }
+
+$('#f-rol').addEventListener('change', e => { state.rol = e.target.value; state.persoon = ''; state.acties.wie = null; syncFilters(); render(); });
+$('#f-persoon').addEventListener('change', e => { state.persoon = e.target.value; state.acties.wie = null; render(); });
+$('#f-peil').addEventListener('change', e => { const d = parseDate(e.target.value); if (d) { state.peil = d; render(); } });
+$('#f-inactief').addEventListener('change', e => { state.inactief = e.target.checked; render(); });
+$('#f-themas').addEventListener('click', e => {
+  const b = e.target.closest('[data-chip]'); if (!b) return;
+  const t = b.dataset.chip;
+  if (!t) state.themas.clear(); else if (state.themas.has(t)) state.themas.delete(t); else state.themas.add(t);
+  render();
+});
+$('#tabs').addEventListener('click', e => { const b = e.target.closest('[data-tab]'); if (b) gaNaar(b.dataset.tab); });
+$('#btn-print').addEventListener('click', () => window.print());
+$('#btn-filters').addEventListener('click', e => {
+  const p = $('#filters-meer'); p.hidden = !p.hidden; e.currentTarget.setAttribute('aria-expanded', String(!p.hidden));
+});
+$('#btn-bericht').addEventListener('click', openBericht);
+$('#btn-normen').addEventListener('click', openNormen);
+$('#bericht-sluit').addEventListener('click', () => $('#dlg-bericht').close());
+$('#bericht-kopie').addEventListener('click', e => kopieer($('#bericht-tekst').value, e.target, 'Kopieer tekst'));
+$('#dlg-normen').addEventListener('close', () => {
+  const v = $('#dlg-normen').returnValue;
+  if (v === 'reset') state.norm = { ...NORM0 };
+  else if (v === 'ok') for (const inp of $$('#normen-rows input')) { const n = Number(inp.value); if (Number.isFinite(n) && n >= 0) state.norm[inp.name] = n; }
+  else return;
+  store.set('norm', state.norm); render();
+});
+$('#scrim').addEventListener('click', sluitContract);
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && state.open) sluitContract(); });
+addEventListener('beforeprint', () => $$('details').forEach(d => { d.dataset.wasOpen = d.open ? '1' : ''; d.open = true; }));
+addEventListener('afterprint', () => $$('details').forEach(d => { d.open = d.dataset.wasOpen === '1'; }));
+
+// Doorklikken in de hoofdinhoud
+$('#main').addEventListener('click', e => {
+  if (e.target.closest('select, input, textarea, label, summary')) return;
+  const t = e.target.closest('[data-open],[data-nr],[data-goto],[data-thema],[data-tab-go],[data-focus],[data-wis],[data-intro],[data-demo]');
+  if (!t) return;
+  if (t.dataset.demo) { if (t.dataset.demo === 'vul') vulVoorbeeld(); else wisAanvullingen(); }
+  else if (t.dataset.focus) { state.focus = state.focus === t.dataset.focus ? null : t.dataset.focus; render(); }
+  else if (t.dataset.intro) { state.intro = false; store.set('intro', false); render(); }
+  else if (t.dataset.wis) { state.themas.clear(); state.rol = 'mt'; state.persoon = ''; state.inactief = false; state.lijst.filter = 'alle'; state.acties.wie = null; syncFilters(); render(); }
+  else if (t.dataset.goto) { state.lijst.filter = t.dataset.goto; state.lijst.zoek = ''; gaNaar('contracten'); }
+  else if (t.dataset.thema) { state.themas = new Set([t.dataset.thema]); state.lijst.filter = 'alle'; gaNaar('contracten'); }
+  else if (t.dataset.tabGo) { if (t.dataset.wieAlle) state.acties.wie = ''; gaNaar(t.dataset.tabGo); }
+  else openContract(t.dataset.open || t.dataset.nr);
+});
+$('#main').addEventListener('change', e => {
+  const t = e.target;
+  if (t.dataset.status) { zetStatus(t.dataset.status, t.value); render(); }
+});
+// Wijzigingen in het contractdetail: status, toewijzing, plan, kwaliteit
+$('#drawer').addEventListener('change', e => {
+  const t = e.target, nr = state.open;
+  if (!nr) return;
+  if (t.dataset.status) zetStatus(t.dataset.status, t.value);
+  else if (t.dataset.wie) {
+    if (t.value === '__auto') delete state.toewijzing[t.dataset.wie]; else state.toewijzing[t.dataset.wie] = t.value;
+    store.set('toewijzing', state.toewijzing);
+  } else if (t.id === 'plan') {
+    if (t.value === 'onbekend') delete state.plan[nr]; else state.plan[nr] = t.value;
+    store.set('plan', state.plan);
+  } else if (t.id === 'k-oordeel' || t.id === 'k-gesprek') {
+    const kw = { ...(state.kwaliteit[nr] || {}) };
+    kw[t.id === 'k-oordeel' ? 'oordeel' : 'gesprek'] = t.value;
+    if (!kw.oordeel && !kw.gesprek) delete state.kwaliteit[nr]; else state.kwaliteit[nr] = kw;
+    store.set('kwaliteit', state.kwaliteit);
+  } else return;
+  const sc = $('#drawer').scrollTop;
+  render(); openContract(nr, { focus: false });
+  $('#drawer').scrollTop = sc;
+});
+// Tooltip
+const tip = $('#tip');
+document.addEventListener('mouseover', e => {
+  const t = e.target.closest && e.target.closest('[data-tip]');
+  if (!t) { tip.hidden = true; return; }
+  tip.textContent = t.getAttribute('data-tip'); tip.hidden = false;
+});
+document.addEventListener('mousemove', e => {
+  if (tip.hidden) return;
+  const r = tip.getBoundingClientRect();
+  let x = e.clientX + 14, y = e.clientY + 14;
+  if (x + r.width > innerWidth - 8) x = e.clientX - r.width - 14;
+  if (y + r.height > innerHeight - 8) y = e.clientY - r.height - 14;
+  tip.style.left = x + 'px'; tip.style.top = y + 'px';
+});
+
+// Deeplinks: #acties, #contracten, #thema, #werk, #hoe, #tijd, #geld, #kwaliteit, #rollen,
+// #contract=NR, #persoon=rol:Naam, #demo (voorbeeld-aanvullingen), #bericht (maandbericht)
+function leesHash() {
+  const h = decodeURIComponent(location.hash.slice(1));
+  const i = h.indexOf('='), key = i < 0 ? h : h.slice(0, i), v = i < 0 ? '' : h.slice(i + 1);
+  if (['overzicht', 'acties', 'contracten', 'thema', 'werk', 'hoe'].includes(key)) state.tab = key;
+  if (key in PANELS) { state.tab = 'overzicht'; state.focus = key; }
+  if (key === 'persoon' && v.includes(':')) { const [r, ...naam] = v.split(':'); if (ROL[r]) { state.rol = r; state.persoon = naam.join(':'); } }
+  return key === 'contract' ? v : key === 'demo' || key === 'bericht' ? '#' + key : null;
+}
+const start = leesHash();
+syncFilters();
+render();
+if (start === '#demo' && META.dummy) vulVoorbeeld();
+else if (start === '#bericht') openBericht();
+else if (start) openContract(start);
+</script>
+</body>
+</html>
