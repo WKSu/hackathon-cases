@@ -3,7 +3,7 @@
 Dit log wordt alleen aangevuld. Een oud besluit pas je niet aan: je vervangt het met een nieuwe entry ("superseded by"). Het format staat in [`/CLAUDE.md`](../../CLAUDE.md).
 
 ## D-001: Stack: één statische kaartpagina met Leaflet en PDOK-ondergrond
-- **Status:** proposed
+- **Status:** accepted (PR #1, reactie eigenaar: "Ga verder met dit plan")
 - **When / who:** 2026-11-05 12:55 · Claude
 - **Decision:** `prototype/index.html` opent met een dubbelklik.
   - Leaflet 1.9.4 komt met een vaste versie van cdnjs.
@@ -14,7 +14,7 @@ Dit log wordt alleen aangevuld. Een oud besluit pas je niet aan: je vervangt het
 - **Rejected alternative:** een marimo- of Python-dashboard. Dat heeft een draaiende kernel nodig en is lastiger op een willekeurige laptop te openen. Een eigen of vendored Leaflet-kopie hebben we ook niet gekozen, omdat de repo-standaard een vaste CDN-versie voorschrijft.
 
 ## D-002: Echte VRI-data, alleen lokaal; in git staat alleen het prep-script
-- **Status:** proposed
+- **Status:** accepted (PR #1, reactie eigenaar: "Ga verder met dit plan")
 - **When / who:** 2026-11-05 12:55 · Claude
 - **Decision:**
   - `prototype/prep_laadlichten.py` (PEP 723 met duckdb en geopandas, draait met `uv run`) leest de lokale VRI-bronnen.
@@ -25,7 +25,7 @@ Dit log wordt alleen aangevuld. Een oud besluit pas je niet aan: je vervangt het
 - **Rejected alternative:** synthetische VRI's. Dan verdwijnt de echte storingsbevinding, en daarmee de kern van "de kaart ziet zelf wat er mis is". Aggregaten nu al committen hebben we ook niet gedaan: daarvoor is eerst toestemming van de data-eigenaar nodig.
 
 ## D-003: Definitie van de signalen "mogelijke storing" en "trendbreuk"
-- **Status:** proposed
+- **Status:** superseded by D-007
 - **When / who:** 2026-11-05 12:55 · Claude
 - **Decision:**
   - **Mogelijke storing:** een signaalgroep die van sep 2024 tot en met jul 2026 gemiddeld ≥5 voertuigen per uur telde, en in de laatste 30 dagen van de data 0. Eerste telling: 87 signaalgroepen op 15 VRI's.
@@ -36,7 +36,7 @@ Dit log wordt alleen aangevuld. Een oud besluit pas je niet aan: je vervangt het
 - **Rejected alternative:** elke signaalgroep met 0 in de laatste maand. Dat geeft te veel ruis, en de demo zou de verkeerde kant op wijzen. Een statistisch anomaliemodel (seizoen, weekdag) hebben we ook niet gekozen: in 90 minuten is dat niet uit te leggen of te valideren.
 
 ## D-004: Koppeling tussen de drie bronnen en het lezen van signaalgroepen uit rijstrooknamen
-- **Status:** proposed
+- **Status:** accepted (PR #1, reactie eigenaar: "Ga verder met dit plan")
 - **When / who:** 2026-11-05 12:55 · Claude
 - **Decision:**
   - **Sleutel:** `Installatienr.` (kenmerken) = `vri_id` (intensiteit) = het deel vóór `-` van ITF `intersection`. Eén VRI kan meerdere ITF-kruispunten hebben, bijvoorbeeld `11070-1` en `11070-2`. De drie bronnen overlappen samen op 124 VRI's.
@@ -46,7 +46,7 @@ Dit log wordt alleen aangevuld. Een oud besluit pas je niet aan: je vervangt het
 - **Rejected alternative:** een ruimtelijke join op afstand. Die geeft fouten bij kruispunten die dicht bij elkaar liggen. Een volledige parser voor alle notaties hebben we ook niet gebouwd: dat kost tijd en levert vandaag weinig extra op.
 
 ## D-005: Stretch: schets van een basisregeling voor 1 kruispunt, conflicten via de standaardnummering
-- **Status:** proposed
+- **Status:** accepted (PR #1, reactie eigenaar: "Ga verder met dit plan")
 - **When / who:** 2026-11-05 12:55 · Claude
 - **Decision:** dit bouwen we alleen als de kaart klaar is.
   - We kiezen één kruispunt uit de 109 met een standaardopbouw: vier takken, signaalgroepen 01–12 auto, 2x fiets, 3x voetganger, 4x/5x ov.
@@ -59,8 +59,21 @@ Dit log wordt alleen aangevuld. Een oud besluit pas je niet aan: je vervangt het
 - **Rejected alternative:** conflicten puur uit kruisende rijstrookgeometrie halen. Zonder verbindingen weet je niet waar een rijstrook naartoe gaat. Alle kruispunten doen hebben we ook niet gekozen: dat is niet te valideren en schept verwachtingen die we niet waarmaken. Helemaal geen laag 2 bouwen viel af, omdat dan juist de ambitie van het team ontbreekt.
 
 ## D-006: Alleen Rotterdam
-- **Status:** proposed
+- **Status:** accepted (PR #1, reactie eigenaar: "Ga verder met dit plan")
 - **When / who:** 2026-11-05 12:55 · Claude
 - **Decision:** de kaart bevat alleen Rotterdamse VRI's. Den Haag staat in de parking lot.
 - **Why:** voor Rotterdam hebben we kenmerken, geometrie en intensiteit. Voor Den Haag hebben we geen VRI-data. Het "(Den Haag)" in het formulier is waarschijnlijk een verwijzing naar het voorbeeld van een levende kaart (open vraag 1).
 - **Rejected alternative:** Den Haag-VRI's uit open bronnen halen. Dat lukt niet binnen het tijdsbudget, en de data zou ongelijk zijn met die van Rotterdam.
+
+## D-007: Minder data: alleen september 2025 tegenover september 2026
+- **Status:** accepted (vraag eigenaar: "gebruik niet alles, het is een prototype; zo simpel mogelijk")
+- **When / who:** 2026-11-05 13:15 · Claude
+- **Decision:**
+  - Uit de intensiteitsdata gebruiken we alleen september 2025 (basis) en september 2026 (nu).
+  - **Stil:** de signaalgroep telde in de basis ≥5 vtg/uur gemiddeld en nu 0, of er zijn nu geen rijen.
+  - **Daling:** nu minder dan 50% van de basis.
+  - **Per VRI:** *geen tellingen ontvangen* als álle normaal actieve signaalgroepen stil zijn, *mogelijke lusstoring* als een deel stil is, en anders *daling*.
+  - **Resultaat:** 16 VRI's ontvangen geen tellingen meer, 9 hebben een mogelijke lusstoring, 40 een daling, 180 zijn ok en 47 hebben geen intensiteitsdata.
+  - De dataset staat lokaal in `<repo>/data/` (uitgesloten van git). Het prep-script leest hem daar.
+- **Why:** de eigenaar vroeg om eenvoud. Dezelfde maand een jaar eerder vergelijken haalt seizoen en zomervakantie weg en is in één zin uit te leggen. De 16 VRI's met totale uitval zijn allemaal iVRI's. Dat wijst eerder op de datalevering dan op kapotte lussen, dus de UI zegt "geen tellingen ontvangen" en niet "storing".
+- **Rejected alternative:** de basis van 25 maanden uit D-003. Die gebruikt meer data, de zomerdip vertekent de vergelijking en het is lastiger uit te leggen.

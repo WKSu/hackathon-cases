@@ -23,3 +23,6 @@ __marimo__/
 Thumbs.db
 .vscode/
 .idea/
+
+# Lokale VRI-dataset (geen open data, niet delen)
+/data/

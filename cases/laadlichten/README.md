@@ -6,11 +6,11 @@ Team Laadlichten · onderwerp Wegbeheer · Themadag Mobiliteit, 5 november 2026.
 
 ## Status (demo vanmiddag)
 
-- [ ] Open besluiten in [`DECISIONS.md`](DECISIONS.md) bevestigd (D-001 t/m D-006)
-- [ ] Prep-script: VRI-locaties, ITF-geometrie en intensiteit samenvoegen tot `data.js` (alleen aggregaten, lokaal; zie D-002)
+- [x] Open besluiten in [`DECISIONS.md`](DECISIONS.md) bevestigd (D-001 t/m D-006)
+- [x] Prep-script: VRI-locaties, ITF-geometrie en intensiteit samenvoegen tot `data.js` (alleen aggregaten, lokaal; zie D-002, D-007)
 - [ ] Kaart met alle VRI's en een keuze van kleurlaag: storing, detectie, OV-prioriteit, vervangjaar
 - [ ] Kruispuntpaneel: kenmerken, dagprofiel per signaalgroep en de ITF-geometrie (rijstroken, stopstrepen, lussen) op de kaart
-- [ ] Signalenlijst "Aandacht nodig": lusuitval, trendbreuk, vervanging ≤ 2027 (zie D-003)
+- [ ] Signalenlijst "Aandacht nodig": geen tellingen, mogelijke lusstoring, daling, vervanging ≤ 2027 (zie D-007)
 - [ ] *Stretch:* schets van een basisregeling voor 1 kruispunt: conflictmatrix, groentijdenplan, functionele specificatie (zie D-005)
 - [ ] "Hoe te demonstreren" (3 stappen) en een screenshot
 
@@ -50,7 +50,7 @@ Overgenomen uit het ontwerpformulier van het team. Persoonsgegevens zijn weggela
 | Intensiteit per uur (parquet) | 54,7 mln rijen, per VRI × uur × signaalgroep | 264 VRI's, sep 2024 – sep 2026 |
 
 - Alle drie de bronnen samen dekken **124 VRI's**.
-- **Eerste bevinding:** 87 signaalgroepen op 15 kruispunten telden historisch gemiddeld ≥5 voertuigen per uur, maar in september 2026 nul. Dat zijn kandidaat-storingen, nog niet bevestigd door Wegbeheer. Nog eens 569 signaalgroepen tellen altijd nul; die tellen we niet als storing.
+- **Eerste bevinding (sep 2025 tegenover sep 2026, D-007):** 16 VRI's leveren geen tellingen meer. Het zijn allemaal iVRI's, dus waarschijnlijk gaat het om de datalevering. Op 9 VRI's is een deel van de signaalgroepen stil: dat zijn mogelijke lusstoringen. Op 40 VRI's is er een daling van meer dan 50%. Geen van deze signalen is al bevestigd door Wegbeheer.
 
 ## Let op
 
@@ -83,7 +83,7 @@ Overgenomen uit het ontwerpformulier van het team. Persoonsgegevens zijn weggela
 ## Open vragen voor het team (vanmiddag)
 
 1. In stap 5 staat "(Den Haag)". Gaat het om de levende kaart van Den Haag als voorbeeld, of willen jullie Den Haag ook op de kaart?
-2. Herkennen jullie de 15 kruispunten met mogelijke uitval? Is dit lusuitval, dataverlies of iets anders?
+2. Herkennen jullie de 9 kruispunten met mogelijke lusstoring en de 16 iVRI's zonder tellingen? Is dit lusuitval, dataverlies of iets anders?
 3. In welke taal of welk formaat werken regelaars nu: CCOL, TLC-FI, iets anders? Dit bepaalt het codeskelet in de parking lot.
 4. Wat moet een schets van een basisregeling minimaal bevatten om voor jullie een bruikbaar startpunt te zijn?
 5. Wie is de eigenaar van de VRI-data, en mogen locaties en uur-aggregaten openbaar? Dit bepaalt of het prototype online kan (D-002).
