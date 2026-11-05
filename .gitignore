@@ -1,0 +1,25 @@
+# Raw inputs (forms, e-mails, transcripts, data exports) stay local.
+# The repo is PUBLIC, and the themadag rules say transcripts must be deleted afterwards:
+# anything that lands in git history is close to impossible to delete.
+_private/
+**/data/private/
+*.msg
+*.eml
+*.pst
+*transcri*
+
+# Secrets
+.env
+.env.*
+
+# Python / marimo
+__pycache__/
+.venv/
+__marimo__/
+.ipynb_checkpoints/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
