@@ -17,6 +17,8 @@ Each case folder contains:
 - **`DECISIONS.md`**: an append-only log of the choices made while building
 - **`prototype/`**: the code
 
+Start a case from [`cases/_template/`](cases/_template). The briefs themselves are kept locally in `_private/` until you decide what may go into this public repo.
+
 ### The build loop (repeat every 15–20 minutes)
 
 1. Take the next unchecked item from the case's status checklist.
