@@ -8,11 +8,19 @@ Team Laadlichten · onderwerp Wegbeheer · Themadag Mobiliteit, 5 november 2026.
 
 - [x] Open besluiten in [`DECISIONS.md`](DECISIONS.md) bevestigd (D-001 t/m D-006)
 - [x] Prep-script: VRI-locaties, ITF-geometrie en intensiteit samenvoegen tot `data.js` (alleen aggregaten, lokaal; zie D-002, D-007)
-- [ ] Kaart met alle VRI's en een keuze van kleurlaag: storing, detectie, OV-prioriteit, vervangjaar
-- [ ] Kruispuntpaneel: kenmerken, dagprofiel per signaalgroep en de ITF-geometrie (rijstroken, stopstrepen, lussen) op de kaart
-- [ ] Signalenlijst "Aandacht nodig": geen tellingen, mogelijke lusstoring, daling, vervanging ≤ 2027 (zie D-007)
+- [x] Kaart met alle VRI's en een keuze van kleurlaag: signalen, detectie, OV-prioriteit, vervangjaar
+- [x] Kruispuntpaneel: kenmerken, dagprofiel per signaalgroep en de ITF-geometrie (rijstroken, lussen, drukknoppen) op de kaart
+- [x] Signalenlijst "Aandacht nodig": geen tellingen, mogelijke lusstoring, daling, vervanging ≤ 2027 (zie D-007, D-008)
 - [ ] *Stretch:* schets van een basisregeling voor 1 kruispunt: conflictmatrix, groentijdenplan, functionele specificatie (zie D-005)
 - [ ] "Hoe te demonstreren" (3 stappen) en een screenshot
+
+## Zo draai je het
+
+De data is niet openbaar en zit daarom niet in de repo (D-002).
+
+1. Zet de VRI-dataset in `data/` in de root van de repo. Git negeert die map (`/data/` in `.gitignore`).
+2. Maak het databestand vanuit de root van de repo: `uv run cases/laadlichten/prototype/prep_laadlichten.py`. Dat duurt ongeveer een minuut en schrijft `prototype/data/private/data.js` (ongeveer 1,4 MB, ook genegeerd door git).
+3. Dubbelklik op `cases/laadlichten/prototype/index.html`. Een kruispunt kun je direct openen met `index.html#vri=36020`.
 
 ## Brief
 
@@ -65,8 +73,8 @@ Overgenomen uit het ontwerpformulier van het team. Persoonsgegevens zijn weggela
 
 ## Hoe te demonstreren (concept, wordt definitief vóór de feature freeze)
 
-1. Open de kaart en kies de kleurlaag **Storing**. De rode kruispunten zijn plekken waar de detectie de afgelopen maand niets meer telde, terwijl daar normaal verkeer rijdt.
-2. Klik een rood kruispunt aan. Je ziet welke signaalgroep sinds wanneer stil is, het dagprofiel, en waar de lussen op het kruispunt liggen.
+1. Open de kaart (kleurlaag **Signalen**). Rood betekent dat een deel van de detectie in sep 2026 niets meer telde, terwijl er in sep 2025 wel verkeer was. Oranje betekent dat de hele VRI geen tellingen meer levert.
+2. Klik in "Aandacht nodig" op **Gordelweg - Soetendaalsebrug**. Je ziet welke signaalgroep stil is (sg 84), het dagprofiel van vorig jaar naast dat van nu, en de 54 lussen en 23 drukknoppen op het kruispunt. Laat ook **Schepenstraat - Schieweg** zien: daar waarschuwt de kaart zelf dat de signaalgroepen misschien hernummerd zijn.
 3. *Stretch:* klik op **Basisregeling-schets**. Je ziet de conflictmatrix en het groentijdenplan, berekend uit geometrie en spitsintensiteit. Zet ov-prioriteit aan en kijk hoe de verdeling verschuift.
 
 ## Parking lot

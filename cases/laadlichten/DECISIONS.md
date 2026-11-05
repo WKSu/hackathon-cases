@@ -77,3 +77,10 @@ Dit log wordt alleen aangevuld. Een oud besluit pas je niet aan: je vervangt het
   - De dataset staat lokaal in `<repo>/data/` (uitgesloten van git). Het prep-script leest hem daar.
 - **Why:** de eigenaar vroeg om eenvoud. Dezelfde maand een jaar eerder vergelijken haalt seizoen en zomervakantie weg en is in één zin uit te leggen. De 16 VRI's met totale uitval zijn allemaal iVRI's. Dat wijst eerder op de datalevering dan op kapotte lussen, dus de UI zegt "geen tellingen ontvangen" en niet "storing".
 - **Rejected alternative:** de basis van 25 maanden uit D-003. Die gebruikt meer data, de zomerdip vertekent de vergelijking en het is lastiger uit te leggen.
+
+## D-008: Waarschuw bij mogelijke hernummering in plaats van stilletjes "storing" te melden
+- **Status:** proposed
+- **When / who:** 2026-11-05 13:30 · Claude
+- **Decision:** de kaart toont een waarschuwing als een VRI met een signaal ook signaalgroepen heeft die vorig jaar niet telden (basis < 1) en nu wel (≥ 5 per uur). De tekst: "Misschien is de regeling aangepast of zijn de signaalgroepen hernummerd." De status zelf blijft staan. Dit speelt bij 4 VRI's, bijvoorbeeld Schepenstraat - Schieweg: daar vielen sg 01 en 12 stil en tellen sg 03, 08 en 11 nieuw.
+- **Why:** het team vroeg om een tool met een kritische houding tegenover zijn eigen input. Een stille signaalgroep is niet altijd een kapotte lus. Dit vangt de meest voor de hand liggende andere verklaring af, zonder extra data.
+- **Rejected alternative:** zulke VRI's uit de signalen halen. Dan verdwijnt een mogelijk echte storing. Een aparte status "hernummerd" hebben we ook niet gekozen: dat is zonder bevestiging van Wegbeheer te stellig.
