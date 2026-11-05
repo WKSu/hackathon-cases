@@ -70,7 +70,7 @@ Overgenomen uit het ontwerpformulier van het team. Persoonsgegevens zijn weggela
   - Er zit geen laag met rijstrookverbindingen in de ITF-export. De schets gebruikt daarom een vaste fasering volgens de standaardnummering, en geen conflictmatrix (D-009).
 - **"Storing" is een signaal, geen diagnose.** Nul tellingen kan een kapotte lus zijn, maar ook dataverlies of een omgebouwd kruispunt. De UI zegt "mogelijke storing".
 - **Privacy.** We gebruiken alleen uur-aggregaten per signaalgroep. Ruwe iVRI-logdata is deels herleidbaar tot personen, en iVRI's staan in het algoritmeregister.
-- **Publieke repo.** De VRI-data is geen open data. Daarom komt er geen `data.js` in git (D-002). Het prototype draait vanmiddag op de laptop met de lokale data.
+- **Publieke repo.** De VRI-data is geen open data. Daarom komt er geen `data.js` in deze repo (D-002), en de volledige kaart draait op de laptop met de lokale data. Op de themadag-site staat een openbare selectie van 8 VRI's in het centrum (D-010), die `prototype/maak_publieke_versie.py` maakt.
 
 ## Hoe te demonstreren
 

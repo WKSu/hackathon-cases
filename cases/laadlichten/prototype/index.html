@@ -224,12 +224,13 @@ function overzicht() {
   const met = (st) => D.vri.filter((v) => v.status === st);
   const vervang = D.vri.filter((v) => v.vervangjaar != null && v.vervangjaar <= 2027).sort((a, b) => a.vervangjaar - b.vervangjaar);
   const kpi = (v, label, s) => `<div class="kpi"><div class="v">${fmt(v)}</div><div class="k">${s ? `<span class="ico" style="background:${s.kleur}">${s.icoon}</span>` : ""}${label}</div></div>`;
-  const groep = (titel, s, items, meta, open) => `
+  const groep = (titel, s, items, meta, open) => (!items.length ? "" : `
     <details class="grp" ${open ? "open" : ""}>
       <summary>${s.icoon ? `<span class="ico" style="background:${s.kleur}">${s.icoon}</span>` : ""}${titel}<span class="n">${items.length}</span></summary>
       ${items.map((v) => `<button class="item" data-id="${v.id}">${esc(v.naam || "VRI " + v.id)}<span class="m">VRI ${v.id} · ${meta(v)}</span></button>`).join("")}
-    </details>`;
+    </details>`);
   $("#side").innerHTML = `
+    ${D.meta.selectie ? `<div class="signal" style="border-color:${K.s1};margin-top:0"><b>Openbare selectie:</b> ${esc(D.meta.selectie)}. Dit zijn echte tellingen, maar Wegbeheer heeft de signalen niet bevestigd. De volledige kaart (292 VRI's) draait alleen lokaal.</div>` : ""}
     <div class="kpis">
       ${kpi(D.vri.length, "VRI's op de kaart")}
       ${kpi(met("storing").length, "Mogelijke lusstoring", STATUS.storing)}
@@ -245,7 +246,7 @@ function overzicht() {
     ${groep(STATUS.daling.label, STATUS.daling, met("daling").sort((a, b) => b.n_daling - a.n_daling), (v) => `${v.n_daling} ${mv(v.n_daling, "signaalgroep", "signaalgroepen")} onder 50%`, false)}
     ${groep("Vervanging gepland t/m 2027", { kleur: K.b700, icoon: "⟳" }, vervang, (v) => `vervangjaar ${v.vervangjaar}${v.vervangjaar <= 2026 ? " (te verifiëren)" : ""}`, false)}
     <p class="note">Prototype. De signalen zijn automatisch afgeleid en <b>niet bevestigd door Wegbeheer</b>. "Stil" betekent: normaal ≥ ${D.meta.actief} tellingen per uur, nu 0.
-    Bronnen: VRI-kenmerken (peildatum jan 2023), ITF-geometrie en tellingen ${D.meta.basis} en ${D.meta.nu}. De data staat lokaal en is niet openbaar (gemaakt ${esc(D.meta.gemaakt)}).</p>`;
+    Bronnen: VRI-kenmerken (peildatum jan 2023), ITF-geometrie en tellingen ${D.meta.basis} en ${D.meta.nu}. ${D.meta.selectie ? "Alleen deze selectie is openbaar; de volledige dataset niet" : "De data staat lokaal en is niet openbaar"} (gemaakt ${esc(D.meta.gemaakt)}).</p>`;
   kleurLaag();
 }
 
@@ -473,7 +474,11 @@ function init() {
   });
   // Start op de stad; de havenkruispunten zie je bij uitzoomen.
   const STAD = [51.915, 4.475], ZOOM = 13;
-  map.setView(STAD, ZOOM);
+  // Openbare selectie: zoom naar de paar VRI's in de selectie en link terug naar de resultatenpagina.
+  const selectie = D.meta.selectie ? L.featureGroup(D.vri.map((v) => v._m)).getBounds().pad(0.15) : null;
+  const startBeeld = (anim) => (selectie ? map.fitBounds(selectie, { animate: anim }) : anim ? map.flyTo(STAD, ZOOM, { duration: 0.8 }) : map.setView(STAD, ZOOM));
+  startBeeld(false);
+  if (D.meta.selectie) $("header .tag").insertAdjacentHTML("beforeend", ' · <a href="../../resultaten.html">resultaten</a>');
 
   $("#side").addEventListener("click", (e) => {
     const item = e.target.closest(".item");
@@ -487,7 +492,7 @@ function init() {
     if (e.target.closest("#terug")) {
       overzicht();
       history.replaceState(null, "", location.pathname);
-      return map.flyTo(STAD, ZOOM, { duration: 0.8 });
+      return startBeeld(true);
     }
     const tr = e.target.closest("tbody tr");
     if (tr && gekozen) toonSg(gekozen, Number(tr.dataset.sg));
