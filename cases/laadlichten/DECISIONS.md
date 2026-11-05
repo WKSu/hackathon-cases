@@ -95,3 +95,16 @@ Dit log wordt alleen aangevuld. Een oud besluit pas je niet aan: je vervangt het
   - De schets staat bij elke VRI met ≥4 tellende auto-signaalgroepen (194 VRI's). Demokruispunt: 22030 Mathenesserbrug - Mathenesserplein (cyclus 68 s, met ov 78 s).
 - **Why:** de eigenaar vroeg om het zo simpel mogelijk te houden. Rekenen in de browser met data die er al is, kost geen extra prep-stap. Eén kruispunt uitzonderen is even veel code als het overal tonen, en het team kan zo vanmiddag zelf door de stad klikken. De disclaimer staat bij elke schets.
 - **Rejected alternative:** een conflictmatrix uit rijstrookgeometrie (D-005). Zonder rijstrookverbindingen in ITF kan dat niet betrouwbaar. De schets alleen tonen voor 1 vast kruispunt: dat is het accepted scopehek, maar het helpt niet bij de eenvoud. Wil je dat toch, dan is het een wijziging van één regel in `kanRegeling()`.
+
+## D-010: Openbare selectie van 8 VRI's in het centrum op de themadag-site
+- **Status:** accepted (eigenaar: "only show a sample of the city centre for like a few VRIs")
+- **When / who:** 2026-11-05 14:05 · Claude
+- **Decision:**
+  - https://wksu.github.io/hackathon/prototypes/laadlichten/ toont dezelfde kaart met de echte aggregaten van 8 VRI's in het centrum: Boompjes (2x), Blaak - Keizerstraat, Churchillplein, Coolsingel (2x), Weena - Karel Doormanstraat en Hofplein.
+  - `prototype/maak_publieke_versie.py` maakt die versie uit het lokale databestand. De lijst met VRI's staat in dat script.
+  - EAN, aannemers en opmerkingen zitten er niet in.
+  - `index.html` herkent een selectie aan `meta.selectie`. Hij toont dan een melding, zoomt in op de selectie en linkt terug naar de resultatenpagina.
+  - De volledige dataset blijft lokaal; D-002 blijft gelden voor deze repo.
+- **Why:** de eigenaar wil de tool aan iedereen laten zien. Een kleine selectie laat alle onderdelen zien (geen tellingen, daling, ov-prioriteit, de schets), zonder de volledige dataset te publiceren. Er is één bronbestand voor de lokale en de openbare versie.
+- **Rejected alternative:** fictieve data op OpenStreetMap-locaties. Dat is meer werk en minder herkenbaar. De volledige dataset online zetten kan pas als de data-eigenaar akkoord is.
+- **Let op:** in het centrum zit geen "mogelijke lusstoring". Dat signaal is online dus niet te zien, alleen lokaal.
