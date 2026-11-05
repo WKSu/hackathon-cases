@@ -1,0 +1,484 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ruimte voor een laadpaal</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<style>
+:root {
+  --bg: #f6f5f1; --panel: #ffffff; --panel-2: #f0eee8;
+  --ink: #1d2330; --ink-2: #4b5363; --ink-3: #7a8191;
+  --line: #e1ded5; --line-2: #cdc9bd;
+  --accent: #0b6e69; --accent-soft: #dcefed;
+  --good: #2e7d32; --good-soft: #e3f1e3;
+  --warn: #b26a00; --warn-soft: #fbefd9;
+  --bad: #8a8f98; --bad-soft: #eceef1;
+  --no: #b3261e; --no-soft: #f9e1df;
+  --laad: #2f5ea8; --laad-soft: #e1e9f6;
+  --radius: 10px;
+  --shadow: 0 1px 2px rgba(29,35,48,.06), 0 4px 14px rgba(29,35,48,.06);
+  --font: "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; background: var(--bg); color: var(--ink); font: 14px/1.45 var(--font); }
+#app { display: grid; grid-template-columns: 400px 1fr; height: 100vh; }
+#side { overflow-y: auto; border-right: 1px solid var(--line); background: var(--bg); padding: 16px 16px 40px; }
+#map { height: 100vh; }
+h1 { font-size: 19px; margin: 0 0 2px; letter-spacing: -.01em; }
+h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: var(--ink-3); margin: 22px 0 8px; font-weight: 600; }
+.sub { color: var(--ink-2); margin: 0 0 12px; font-size: 13px; }
+.tag { display: inline-block; font-size: 11px; padding: 1px 7px; border-radius: 99px; background: var(--panel-2); color: var(--ink-2); border: 1px solid var(--line); }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); padding: 12px; }
+.search { display: flex; gap: 6px; }
+.search input { flex: 1; font: inherit; padding: 8px 10px; border: 1px solid var(--line-2); border-radius: 8px; background: #fff; min-width: 0; }
+button { font: inherit; cursor: pointer; border-radius: 8px; border: 1px solid var(--line-2); background: #fff; padding: 7px 11px; color: var(--ink); }
+button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+#results { margin-top: 6px; }
+#results button { display: block; width: 100%; text-align: left; border: 0; border-bottom: 1px solid var(--line); border-radius: 0; padding: 6px 4px; background: transparent; }
+#results button:hover { background: var(--accent-soft); }
+.chips { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; align-items: center; }
+.chips button { padding: 3px 10px; border-radius: 99px; font-size: 13px; }
+.hint { color: var(--ink-3); font-size: 12px; }
+.msg { margin-top: 8px; padding: 8px 10px; border-radius: 8px; background: var(--warn-soft); color: #7a4900; font-size: 13px; }
+.kpis { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.kpi { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 9px 10px; }
+.kpi .v { font-size: 21px; font-weight: 650; letter-spacing: -.01em; font-variant-numeric: tabular-nums; }
+.kpi .l { font-size: 12px; color: var(--ink-2); }
+.kpi .s { font-size: 12px; color: var(--ink-3); }
+.kpi.wide { grid-column: span 2; }
+.bar { display: flex; height: 10px; border-radius: 5px; overflow: hidden; margin: 6px 0 4px; background: var(--panel-2); }
+.bar span { display: block; height: 100%; }
+.legend { display: grid; grid-template-columns: auto 1fr auto; gap: 4px 8px; font-size: 13px; align-items: center; }
+.sw { width: 14px; height: 14px; border-radius: 3px; display: inline-block; border: 1px solid rgba(0,0,0,.15); }
+.num { font-variant-numeric: tabular-nums; text-align: right; color: var(--ink-2); }
+.ctrl { margin: 10px 0 2px; }
+.ctrl label { display: flex; justify-content: space-between; font-size: 13px; }
+.ctrl label b { font-variant-numeric: tabular-nums; }
+.ctrl input[type=range] { width: 100%; accent-color: var(--accent); }
+.ctrl .hint { margin-top: -2px; }
+.check { display: flex; gap: 8px; align-items: flex-start; font-size: 13px; margin-top: 8px; }
+ol.best { list-style: none; padding: 0; margin: 0; }
+ol.best li { display: grid; grid-template-columns: 26px 1fr; gap: 8px; padding: 8px 4px; border-bottom: 1px solid var(--line); cursor: pointer; border-radius: 6px; }
+ol.best li:hover { background: var(--accent-soft); }
+.badge { width: 24px; height: 24px; border-radius: 50%; background: var(--accent); color: #fff; font-weight: 700; display: grid; place-items: center; font-size: 13px; }
+.best .t { font-weight: 600; }
+.best .d { color: var(--ink-2); font-size: 12.5px; }
+details { margin-top: 18px; }
+summary { cursor: pointer; font-weight: 600; }
+details table { border-collapse: collapse; font-size: 12.5px; margin-top: 8px; }
+details td, details th { border-bottom: 1px solid var(--line); padding: 4px 6px 4px 0; vertical-align: top; text-align: left; }
+.foot { margin-top: 18px; font-size: 12px; color: var(--ink-3); }
+.empty { color: var(--ink-3); font-size: 13px; padding: 6px 0; }
+/* popup */
+.leaflet-popup-content { margin: 10px 12px; font: 13px/1.4 var(--font); min-width: 250px; }
+.pop h3 { margin: 0 0 4px; font-size: 14px; }
+.pop .st { display: inline-block; padding: 1px 8px; border-radius: 99px; font-size: 12px; font-weight: 600; margin-bottom: 6px; }
+.st.kandidaat { background: var(--good-soft); color: #1d5a21; }
+.st.maatwerk { background: var(--warn-soft); color: #7a4900; }
+.st.ongeschikt { background: var(--bad-soft); color: #4b5363; }
+.st.laadvak { background: var(--laad-soft); color: #22457d; }
+.pop ul { list-style: none; padding: 0; margin: 0; }
+.pop li { display: grid; grid-template-columns: 18px 1fr; gap: 4px; padding: 2px 0; }
+.pop .ok { color: var(--good); font-weight: 700; }
+.pop .mw { color: var(--warn); font-weight: 700; }
+.pop .no { color: var(--no); font-weight: 700; }
+.pop .na { color: var(--ink-3); font-weight: 700; }
+.pop .src { color: var(--ink-3); font-size: 11.5px; margin-top: 6px; }
+.paal-ico { width: 26px; height: 26px; border-radius: 50%; background: var(--accent); color: #fff; font: 700 13px/26px var(--font); text-align: center; border: 2px solid #fff; box-shadow: 0 1px 4px rgba(0,0,0,.4); }
+.home-ico { width: 14px; height: 14px; border-radius: 50%; background: var(--ink); border: 3px solid #fff; box-shadow: 0 0 0 1px var(--ink); }
+#nodata { position: fixed; inset: 0; display: none; place-items: center; background: rgba(246,245,241,.96); z-index: 2000; }
+#nodata .card { max-width: 520px; }
+code { background: var(--panel-2); padding: 1px 5px; border-radius: 4px; font-size: 12.5px; }
+@media (max-width: 820px) {
+  #app { grid-template-columns: 1fr; grid-template-rows: 55vh auto; height: auto; }
+  #map { height: 55vh; grid-row: 1; }
+  #side { grid-row: 2; border-right: 0; }
+}
+</style>
+</head>
+<body>
+<div id="app">
+  <aside id="side">
+    <h1>Ruimte voor een laadpaal</h1>
+    <p class="sub">Welke parkeervakken passen binnen het Rotterdamse plaatsingsbeleid, en waar is een laadpaal het hardst nodig? <span class="tag">prototype themadag</span></p>
+
+    <div class="card">
+      <form class="search" id="f">
+        <input id="q" type="search" placeholder="Adres in Noord, bv. Zwaanshals 250" autocomplete="off" aria-label="Adres">
+        <button class="primary" type="submit">Zoek</button>
+      </form>
+      <div id="results"></div>
+      <div class="chips" id="presets"><span class="hint">Voorbeeld:</span></div>
+      <div class="hint" style="margin-top:6px">Of klik op de kaart. Demogebied: <span id="buurten"></span>.</div>
+      <div id="msg"></div>
+    </div>
+
+    <div id="ctx" hidden>
+      <h2>Binnen 200 m van <span id="here"></span></h2>
+      <div class="kpis" id="kpis"></div>
+
+      <h2>Beste nieuwe laadlocaties</h2>
+      <div class="card" style="padding:4px 10px">
+        <ol class="best" id="best"></ol>
+      </div>
+      <p class="hint" id="bestHint"></p>
+    </div>
+
+    <h2>Drempels</h2>
+    <div class="card">
+      <div class="ctrl">
+        <label for="sStoep">Minimale stoepbreedte <b id="vStoep"></b></label>
+        <input id="sStoep" type="range" min="1.2" max="3" step="0.1" value="2">
+        <div class="hint">Beleid: 2 m stoep, 1,20 m doorgang naast de paal. Tot 0,3 m smaller = maatwerk (uitzondering 90 cm).</div>
+      </div>
+      <div class="ctrl">
+        <label for="sBoom">Afstand tot kroonrand grote boom <b id="vBoom"></b></label>
+        <input id="sBoom" type="range" min="-4" max="4" step="0.5" value="0">
+        <div class="hint">Beleid: "geen grote bomen nabij". Aanname: niet onder de kroon (≥ 12 m hoog). Negatief = paal mag onder de kroonrand.</div>
+      </div>
+      <div class="ctrl">
+        <label for="sNorm">Norm: 1 laadvak per <b id="vNorm"></b> openbare vakken</label>
+        <input id="sNorm" type="range" min="4" max="20" step="1" value="10">
+        <div class="hint">Beleid noemt 1 op 10 voor nieuwe gebieden. Bepaalt het tekort en de volgorde.</div>
+      </div>
+    </div>
+
+    <h2>Legenda</h2>
+    <div class="card legend" id="legend"></div>
+
+    <details>
+      <summary>Hoe wordt dit berekend?</summary>
+      <p>Elk openbaar parkeervak wordt getoetst aan de <i>Beleidsregel plaatsing laadpunten in de openbare ruimte gemeente Rotterdam 2025</i> (Gemeenteblad 2025, 307736). Haalt een vak alle regels, dan is het een <b>kandidaat</b>. Dat is nog geen besluit: elke locatie krijgt een verkeerskundige toets en een verkeersbesluit.</p>
+      <table>
+        <tr><th>Regel</th><th>Hoe we dat meten</th></tr>
+        <tr><td>Stoep ≥ 2 m, doorgang ≥ 1,20 m</td><td>Lijn loodrecht vanaf de stoeprand van het vak door het BGT-voetpad. De paal staat 50 cm uit de band en is ~30 cm diep, dus doorgang = stoep − 0,8 m.</td></tr>
+        <tr><td>Geen grote bomen nabij</td><td>Afstand van de paal tot de kroonrand (kroondiameter / 2) van de dichtstbijzijnde boom ≥ 12 m hoog.</td></tr>
+        <tr><td>Niet op uitstapstrook bij fietspad</td><td>De stoepkant is een fietspad, of de strook is &lt; 1,5 m met een fietspad erachter.</td></tr>
+        <tr><td>Niet bij parkeerduurbeperking</td><td>Het vak ligt in een blauwe zone of een tijdsafhankelijk vak.</td></tr>
+        <tr><td>Geen bijzonder vak</td><td>Gehandicapten, laden en lossen, deelauto, taxi enzovoort vallen af.</td></tr>
+        <tr><td>Niet in het groen <span class="hint">(formulier)</span></td><td>Grenst de stoepkant van het vak aan BGT-groen, dan is het ongeschikt.</td></tr>
+        <tr><td>Kabel ≤ 25 m, nooddeuren</td><td>Niet in de data: ter plaatse checken.</td></tr>
+        <tr><td>Tekort</td><td>Norm × openbare vakken binnen 200 m (hemelsbreed) − bestaande laadvakken binnen 200 m.</td></tr>
+      </table>
+      <p class="hint">Gemeentelijke parkeervakken en BGT zijn apart ingemeten. De stoepbreedte kan daarom een paar decimeter afwijken. Bestaande laadvakken komen uit de laag "Elektrische oplaadpunten" van de bijzondere vakken.</p>
+    </details>
+
+    <div class="foot" id="foot"></div>
+  </aside>
+  <div id="map" role="region" aria-label="Kaart"></div>
+</div>
+
+<div id="nodata"><div class="card">
+  <h1>Nog geen data</h1>
+  <p>Deze pagina leest <code>data/private/data.js</code>. Dat bestand staat niet in git: het bevat gemeentelijke lagen. Draai eerst het prep-script in deze map:</p>
+  <p><code>uv run prep_laadpalen.py --parkeren … --tir … --bomen … --cbs …</code></p>
+  <p class="hint">Zie de README van de case voor de bronnen.</p>
+</div></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="data/private/data.js"></script>
+<script>
+"use strict";
+const D = window.LAADPALEN;
+if (!D) { document.getElementById("nodata").style.display = "grid"; throw new Error("geen data"); }
+
+// ---------- helpers ----------
+const V = D.vakken, KL = D.meta.klassen, KI = Object.fromEntries(KL.map((k, i) => [k, i]));
+const NV = V.cat.length, R = D.meta.straal;
+const nl = (x, d = 0) => Number(x).toLocaleString("nl-NL", { minimumFractionDigits: d, maximumFractionDigits: d });
+const m1 = x => nl(x, 1) + " m";
+const lat = (a, i) => a[2 * i] / 1e6, lon = (a, i) => a[2 * i + 1] / 1e6;
+const KX = Math.cos(51.93 * Math.PI / 180) * 111320, KY = 110570;
+const dist = (la1, lo1, la2, lo2) => Math.hypot((lo2 - lo1) * KX, (la2 - la1) * KY);
+const ring = r => { const o = []; for (let j = 0; j < r.length; j += 2) o.push([r[j] / 1e6, r[j + 1] / 1e6]); return o; };
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const COL = { kandidaat: "#2e7d32", maatwerk: "#d08a00", ongeschikt: "#a3a8b0", laadvak: "#2f5ea8" };
+
+const P = { stoep: 2.0, boom: 0, norm: 10 };
+
+// ---------- toets per vak (D-004) ----------
+function evalBay(i) {
+  const c = V.cat[i], out = [];
+  if (c === 1) return { status: "laadvak", items: [["ok", "Bestaand laadvak (Elektrische oplaadpunten)"]] };
+  if (c === 3) out.push(["no", "Bijzonder vak: " + D.meta.bijz_types[V.bijz[i]]]);
+  else if (c === 2) out.push(["no", "Parkeerduurbeperking: " + D.meta.bijz_types[V.bijz[i]]]);
+  else out.push(["ok", "Regulier openbaar parkeervak"]);
+
+  const k = V.kant[i], sw = V.sw[i] / 10, ach = V.achter[i];
+  if (k === KI.voetpad) {
+    if (sw < 1.5 && ach === KI.fietspad) out.push(["no", `Smalle strook (${m1(sw)}) naast fietspad: uitstapstrook`]);
+    else if (sw >= P.stoep) out.push(["ok", `Stoep ${m1(sw)}: ${m1(Math.max(sw - 0.8, 0))} doorgang naast de paal`]);
+    else if (sw >= P.stoep - 0.3) out.push(["mw", `Stoep ${m1(sw)}: alleen met uitzondering (${m1(Math.max(sw - 0.8, 0))} doorgang)`]);
+    else out.push(["no", `Stoep ${m1(sw)}: te smal (min. ${m1(P.stoep)})`]);
+  } else if (k === KI.groen) out.push(["no", "Stoepkant grenst aan groen, niet aan een stoep"]);
+  else if (k === KI.fietspad) out.push(["no", "Grenst direct aan fietspad: uitstapstrook"]);
+  else if (k === KI.woonerf) out.push(["mw", "Woonerf: geen aparte stoep, maatwerk"]);
+  else if (k === KI.parkeren) out.push(["no", "Geen stoep: tweede rij of parkeerterrein"]);
+  else out.push(["no", "Geen stoep gevonden naast dit vak (BGT)"]);
+
+  const bc = V.boomc[i], bd = V.boomd[i] / 10, br = V.boomr[i] / 10;
+  if (bc === -1 || bc >= 9000) out.push(["ok", "Geen grote boom binnen 40 m"]);
+  else {
+    const cl = bc / 10, txt = `Grote boom: stam op ${m1(bd)}, kroonrand op ${m1(cl)}`;
+    if (cl >= P.boom + 1) out.push(["ok", txt]);
+    else if (cl >= P.boom) out.push(["mw", txt + " (krap)"]);
+    else out.push(["no", `Onder de kroon van een grote boom (stam op ${m1(bd)}, kroonstraal ${m1(br)})`]);
+  }
+
+  out.push(["na", "Laagspanningskabel binnen 25 m: ter plaatse checken"]);
+  out.push(["na", "Geen inrit, nooddeur of deur van een woning ervoor: ter plaatse checken"]);
+  const status = out.some(x => x[0] === "no") ? "ongeschikt" : out.some(x => x[0] === "mw") ? "maatwerk" : "kandidaat";
+  return { status, items: out };
+}
+const tekort = i => V.n200[i] / P.norm - V.l200[i];
+
+// ---------- kaart ----------
+const map = L.map("map", { preferCanvas: true, zoomControl: true }).setView([51.935, 4.475], 14);
+const brt = L.tileLayer("https://service.pdok.nl/brt/achtergrondkaart/wmts/v2_0/grijs/EPSG:3857/{z}/{x}/{y}.png",
+  { maxZoom: 21, maxNativeZoom: 19, attribution: "BRT Achtergrondkaart © Kadaster" }).addTo(map);
+const lucht = L.tileLayer("https://service.pdok.nl/hwh/luchtfotorgb/wmts/v1_0/Actueel_orthoHR/EPSG:3857/{z}/{x}/{y}.jpeg",
+  { maxZoom: 21, maxNativeZoom: 19, attribution: "Luchtfoto © Beeldmateriaal Nederland" });
+const canvas = L.canvas({ padding: 0.3 });
+
+const gCells = L.layerGroup().addTo(map);
+const gBuurt = L.layerGroup().addTo(map);
+const gLaad = L.layerGroup().addTo(map);
+const gBgt = L.layerGroup().addTo(map);
+const gBomen = L.layerGroup().addTo(map);
+const gVak = L.layerGroup().addTo(map);
+const gSel = L.layerGroup().addTo(map);
+L.control.layers({ "Kaart (grijs)": brt, "Luchtfoto": lucht },
+  { "Dekking per 100 m": gCells, "Bestaande laadvakken": gLaad, "Stoep, groen, fietspad (BGT)": gBgt, "Bomen": gBomen },
+  { collapsed: true }).addTo(map);
+
+// buurtgrenzen
+const buurtRings = D.buurtgrenzen.map(b => ({ naam: b.naam, rings: b.rings.map(ring) }));
+buurtRings.forEach(b => b.rings.forEach(r => L.polygon(r, { color: "#1d2330", weight: 1.2, dashArray: "4 4", fill: false, interactive: false, renderer: canvas }).addTo(gBuurt)));
+function inArea(la, lo) {
+  for (const b of buurtRings) for (const r of b.rings) {
+    let ins = false;
+    for (let a = 0, c = r.length - 1; a < r.length; c = a++) {
+      const [ya, xa] = r[a], [yc, xc] = r[c];
+      if ((ya > la) !== (yc > la) && lo < (xc - xa) * (la - ya) / (yc - ya) + xa) ins = !ins;
+    }
+    if (ins) return b.naam;
+  }
+  return null;
+}
+
+// overzicht: dekking t.o.v. de norm per CBS-vierkant (laadvakken / benodigde laadvakken binnen 200 m)
+const C = D.cellen, NC = C.woningen.length;
+const SEQ = ["#8f3d0c", "#c4621c", "#e6913f", "#f6c07e", "#fbe3c2", "#dcebd9"]; // laag -> op norm
+const SEQ_LBL = ["< 20%", "20–40%", "40–60%", "60–80%", "80–100%", "≥ norm"];
+const dcol = f => SEQ[Math.min(5, Math.floor(f * 5))];
+function drawCells() {
+  gCells.clearLayers();
+  const dy = 50 / KY, dx = 50 / KX, op = sel ? 0.16 : 0.5;
+  for (let i = 0; i < NC; i++) {
+    if (!C.n200[i]) continue;
+    const la = lat(C.ll, i), lo = lon(C.ll, i), f = C.l200[i] / (C.n200[i] / P.norm);
+    L.rectangle([[la - dy, lo - dx], [la + dy, lo + dx]], { renderer: canvas, stroke: false, fillColor: dcol(f), fillOpacity: op, interactive: false }).addTo(gCells);
+  }
+}
+// bestaande laadvakken
+for (let i = 0; i < NV; i++) if (V.cat[i] === 1)
+  L.circleMarker([lat(V.rp, i), lon(V.rp, i)], { renderer: canvas, radius: 3.2, color: "#fff", weight: 1, fillColor: COL.laadvak, fillOpacity: 1, interactive: false }).addTo(gLaad);
+
+// legenda
+document.getElementById("legend").innerHTML = [
+  [COL.kandidaat, "Kandidaat: haalt alle regels"], [COL.maatwerk, "Maatwerk: kan met uitzondering"],
+  [COL.ongeschikt, "Ongeschikt"], [COL.laadvak, "Bestaand laadvak"],
+].map(([c, t]) => `<span class="sw" style="background:${c}"></span><span>${t}</span><span></span>`).join("") +
+  `<span></span><span style="margin-top:6px">Dekking t.o.v. de norm, per 100 m-vak (bestaande laadvakken binnen 200 m)</span><span></span>` +
+  SEQ.map((c, k) => `<span class="sw" style="background:${c};opacity:.8"></span><span>${SEQ_LBL[k]}</span><span></span>`).join("") +
+  `<span class="paal-ico" style="width:18px;height:18px;line-height:15px;font-size:10px">1</span><span>Voorgestelde laadpaal</span><span></span>`;
+document.getElementById("buurten").textContent = D.meta.buurten.join(", ");
+document.getElementById("foot").innerHTML = "Bronnen: " + D.meta.bronnen.map(esc).join(" · ") + ". Prototype, geen besluit.";
+
+// ---------- selectie ----------
+let sel = null;
+function setLocation(la, lo, label) {
+  const b = inArea(la, lo);
+  const msg = document.getElementById("msg");
+  if (!b) {
+    msg.innerHTML = `<div class="msg">Dit punt ligt buiten het demogebied. Kies een adres in ${esc(D.meta.buurten.join(", "))}.</div>`;
+    return;
+  }
+  msg.innerHTML = "";
+  sel = { la, lo, label: label || `punt in ${b}` };
+  history.replaceState(null, "", `#${la.toFixed(6)},${lo.toFixed(6)}`);
+  document.getElementById("results").innerHTML = "";
+  map.flyTo([la, lo], 17, { duration: 0.6 });
+  render();
+}
+map.on("click", e => setLocation(e.latlng.lat, e.latlng.lng, null));
+
+function render() {
+  drawCells();
+  gSel.clearLayers(); gVak.clearLayers(); gBgt.clearLayers(); gBomen.clearLayers();
+  if (!sel) return;
+  const { la, lo } = sel;
+  L.circle([la, lo], { radius: R, color: "#1d2330", weight: 1.5, fill: false, interactive: false }).addTo(gSel);
+  L.marker([la, lo], { icon: L.divIcon({ className: "", html: '<div class="home-ico"></div>', iconSize: [14, 14] }), interactive: false }).addTo(gSel);
+
+  // BGT-context binnen ~250 m
+  const near = r => dist(la, lo, r[0] / 1e6, r[1] / 1e6) < R + 120;
+  const bgtStyle = { groen: "#7fb069", voetpad: "#e8c48f", fietspad: "#d98a83", inrit: "#9aa0a6" };
+  for (const [k, col] of Object.entries(bgtStyle))
+    for (const r of D.bgt[k]) if (near(r))
+      L.polygon(ring(r), { renderer: canvas, stroke: false, fillColor: col, fillOpacity: k === "groen" ? 0.45 : 0.35, interactive: false }).addTo(gBgt);
+
+  // bomen
+  const B = D.bomen; let nb = 0, nbg = 0;
+  for (let i = 0; i < B.groot.length; i++) {
+    const bl = lat(B.ll, i), bo = lon(B.ll, i), d = dist(la, lo, bl, bo);
+    if (d > R + 60) continue;
+    if (d <= R) { nb++; if (B.groot[i]) nbg++; }
+    if (B.groot[i]) L.circle([bl, bo], { renderer: canvas, radius: B.r[i] / 10, stroke: false, fillColor: "#2f6b1f", fillOpacity: 0.16, interactive: false }).addTo(gBomen);
+    L.circleMarker([bl, bo], { renderer: canvas, radius: B.groot[i] ? 2.6 : 1.8, stroke: false, fillColor: "#2f6b1f", fillOpacity: 0.9, interactive: false }).addTo(gBomen);
+  }
+
+  // vakken
+  const inR = [], cnt = { kandidaat: 0, maatwerk: 0, ongeschikt: 0, laadvak: 0 };
+  const sws = [];
+  for (let i = 0; i < NV; i++) {
+    const d = dist(la, lo, lat(V.rp, i), lon(V.rp, i));
+    if (d > R + 40) continue;
+    const ev = evalBay(i);
+    const poly = L.polygon(ring(V.poly[i]), { renderer: canvas, color: COL[ev.status], weight: 1, fillColor: COL[ev.status], fillOpacity: ev.status === "ongeschikt" ? 0.35 : 0.75 });
+    poly.on("click", e => { L.DomEvent.stopPropagation(e); popup(i, e.latlng); });
+    poly.addTo(gVak);
+    if (d <= R) {
+      cnt[ev.status]++; inR.push({ i, d, ev });
+      if (V.cat[i] === 0 && V.kant[i] === KI.voetpad) sws.push(V.sw[i] / 10);
+    }
+  }
+  const nPub = inR.length, nLaad = cnt.laadvak;
+  // woningen en groen in de cirkel
+  let w = 0; for (let i = 0; i < NC; i++) if (dist(la, lo, lat(C.ll, i), lon(C.ll, i)) <= R) w += C.woningen[i];
+  let groen = 0; const G = D.groen_m2; for (let i = 0; i < G.m2.length; i++) if (dist(la, lo, lat(G.ll, i), lon(G.ll, i)) <= R) groen += G.m2[i];
+  sws.sort((a, b) => a - b);
+  const med = sws.length ? sws[Math.floor(sws.length / 2)] : NaN;
+  const pct2 = sws.length ? sws.filter(s => s >= P.stoep).length / sws.length : NaN;
+  const tk = Math.max(0, Math.ceil(nPub / P.norm - nLaad));
+
+  const tot = cnt.kandidaat + cnt.maatwerk + cnt.ongeschikt;
+  const seg = (k) => `<span style="width:${(100 * cnt[k] / Math.max(tot, 1)).toFixed(1)}%;background:${COL[k]}"></span>`;
+  document.getElementById("here").textContent = sel.label;
+  document.getElementById("kpis").innerHTML = `
+    <div class="kpi"><div class="v">${nl(nPub)}</div><div class="l">openbare parkeervakken</div></div>
+    <div class="kpi"><div class="v" style="color:var(--laad)">${nl(nLaad)}</div><div class="l">bestaande laadvakken</div><div class="s">${nPub ? nl(100 * nLaad / nPub, 1) : 0}% · norm ${nl(100 / P.norm, 0)}%</div></div>
+    <div class="kpi"><div class="v" style="color:${tk ? "var(--warn)" : "var(--good)"}">${tk ? nl(tk) : "0"}</div><div class="l">laadvakken tekort t.o.v. norm</div></div>
+    <div class="kpi"><div class="v">${nl(w)}</div><div class="l">woningen (CBS)</div><div class="s">${nLaad ? nl(w / nLaad) + " per laadvak" : "geen laadvak"}</div></div>
+    <div class="kpi"><div class="v">${nl(nb)}</div><div class="l">bomen</div><div class="s">waarvan ${nl(nbg)} groot (≥ 12 m)</div></div>
+    <div class="kpi"><div class="v">${nl(Math.round(groen / 100) * 100)}</div><div class="l">m² groen (BGT, circa)</div></div>
+    <div class="kpi wide"><div class="l">Stoep naast de vakken: mediaan <b>${isNaN(med) ? "–" : m1(med)}</b>, ${isNaN(pct2) ? "–" : nl(100 * pct2) + "%"} is ≥ ${m1(P.stoep)}</div>
+      <div class="bar">${seg("kandidaat")}${seg("maatwerk")}${seg("ongeschikt")}</div>
+      <div class="s"><b style="color:${COL.kandidaat}">${nl(cnt.kandidaat)} kandidaat</b> · <b style="color:#9a6700">${nl(cnt.maatwerk)} maatwerk</b> · ${nl(cnt.ongeschikt)} ongeschikt</div></div>`;
+  document.getElementById("ctx").hidden = false;
+
+  // beste nieuwe laadlocaties (D-006)
+  let pool = inR.filter(x => x.ev.status === "kandidaat"), fromMw = false;
+  if (!pool.length) { pool = inR.filter(x => x.ev.status === "maatwerk"); fromMw = true; }
+  pool.forEach(x => x.score = tekort(x.i) + (V.kop[x.i] ? 0.5 : 0) + V.sw[x.i] / 1000);
+  pool.sort((a, b) => b.score - a.score);
+  const pick = [];
+  for (const x of pool) {
+    const pl = lat(V.paal, x.i), po = lon(V.paal, x.i);
+    if (pick.every(p => dist(pl, po, lat(V.paal, p.i), lon(V.paal, p.i)) >= 40)) pick.push(x);
+    if (pick.length === 5) break;
+  }
+  const ol = document.getElementById("best");
+  ol.innerHTML = pick.length ? "" : `<li class="empty" style="display:block">Geen kandidaat of maatwerk binnen 200 m met deze drempels.</li>`;
+  pick.forEach((x, n) => {
+    const i = x.i, pl = lat(V.paal, i), po = lon(V.paal, i), pt = V.partner[i];
+    const twee = pt >= 0 && evalBay(pt).status !== "ongeschikt" && V.cat[pt] === 0;
+    if (twee) L.polygon(ring(V.poly[pt]), { renderer: canvas, color: "#0b6e69", weight: 2.5, fill: false, interactive: false }).addTo(gSel);
+    L.polygon(ring(V.poly[i]), { renderer: canvas, color: "#0b6e69", weight: 2.5, fill: false, interactive: false }).addTo(gSel);
+    L.marker([pl, po], { icon: L.divIcon({ className: "", html: `<div class="paal-ico">${n + 1}</div>`, iconSize: [26, 26] }), zIndexOffset: 1000 })
+      .on("click", () => popup(i, [pl, po])).addTo(gSel);
+    const li = document.createElement("li");
+    const tki = Math.max(0, tekort(i));
+    li.innerHTML = `<span class="badge">${n + 1}</span><div><div class="t" id="addr${n}">Locatie ${n + 1}</div>
+      <div class="d">Stoep ${m1(V.sw[i] / 10)} · ${twee ? "2 laadvakken" : "1 laadvak"} · ${nl(x.d)} m van het adres${V.kop[i] ? " · eind van de rij" : ""}</div>
+      <div class="d">Tekort binnen 200 m: ${nl(Math.round(tki))} laadvakken (${nl(V.l200[i])} bestaand bij ${nl(V.n200[i])} vakken)</div></div>`;
+    li.onclick = () => { map.flyTo([pl, po], 19, { duration: 0.5 }); popup(i, [pl, po]); };
+    ol.appendChild(li);
+    reverse(pl, po).then(t => { const el = document.getElementById("addr" + n); if (t && el) el.textContent = `${n + 1}. Bij ${t}`; });
+  });
+  document.getElementById("bestHint").textContent = fromMw
+    ? "Er is geen vak dat alle regels haalt. Dit zijn de maatwerkvakken met het grootste tekort."
+    : "Gerangschikt op het tekort aan laadvakken binnen 200 m van de paal. Bij gelijk tekort gaat het eind van een rij voor (beleid: bij voorkeur straathoeken).";
+}
+
+function popup(i, at) {
+  const ev = evalBay(i), ic = { ok: "✓", mw: "!", no: "✗", na: "?" };
+  const tp = ["langsparkeren", "dwarsparkeren", "schuinparkeren"][V.type[i]];
+  const html = `<div class="pop"><h3>Parkeervak <span class="hint">${tp} · ${esc(D.meta.buurten[V.buurt[i]] || "")}</span></h3>
+    <span class="st ${ev.status}">${ev.status === "laadvak" ? "bestaand laadvak" : ev.status}</span>
+    <ul>${ev.items.map(([k, t]) => `<li><span class="${k}">${ic[k]}</span><span>${esc(t)}</span></li>`).join("")}</ul>
+    ${ev.status !== "laadvak" ? `<div class="src">Binnen 200 m: ${nl(V.n200[i])} vakken, ${nl(V.l200[i])} laadvakken, ${nl(V.w200[i])} woningen. Tekort ${nl(Math.round(Math.max(0, tekort(i))))} laadvakken.</div>` : ""}
+    <div class="src">Toets volgens Beleidsregel laadpunten Rotterdam 2025; aannames in "Hoe wordt dit berekend?".</div></div>`;
+  L.popup({ maxWidth: 320 }).setLatLng(at).setContent(html).openOn(map);
+}
+
+// ---------- adres zoeken (PDOK Locatieserver, D-008) ----------
+const LS = "https://api.pdok.nl/bzk/locatieserver/search/v3_1/";
+const pt = s => { const m = /POINT\(([-\d.]+) ([-\d.]+)\)/.exec(s); return m ? [+m[2], +m[1]] : null; };
+document.getElementById("f").addEventListener("submit", async e => {
+  e.preventDefault();
+  const q = document.getElementById("q").value.trim(); if (!q) return;
+  const box = document.getElementById("results");
+  box.innerHTML = '<div class="hint">Zoeken…</div>';
+  try {
+    const u = `${LS}free?q=${encodeURIComponent(q)}&fq=type:adres&fq=gemeentenaam:Rotterdam&rows=6&fl=weergavenaam,centroide_ll`;
+    const r = await fetch(u); if (!r.ok) throw new Error(r.status);
+    const docs = (await r.json()).response.docs;
+    if (!docs.length) { box.innerHTML = '<div class="hint">Geen adres gevonden in Rotterdam.</div>'; return; }
+    if (docs.length === 1) { const [a, b] = pt(docs[0].centroide_ll); setLocation(a, b, docs[0].weergavenaam.replace(", Rotterdam", "")); return; }
+    box.innerHTML = "";
+    docs.forEach(d => {
+      const b = document.createElement("button"); b.type = "button"; b.textContent = d.weergavenaam;
+      b.onclick = () => { const [x, y] = pt(d.centroide_ll); setLocation(x, y, d.weergavenaam.replace(", Rotterdam", "")); };
+      box.appendChild(b);
+    });
+  } catch (err) {
+    box.innerHTML = '<div class="msg">Adres zoeken lukt niet (geen internet?). Klik op de kaart of kies een voorbeeld.</div>';
+  }
+});
+const revCache = {};
+async function reverse(la, lo) {
+  const k = la.toFixed(5) + "," + lo.toFixed(5);
+  if (k in revCache) return revCache[k];
+  try {
+    const r = await fetch(`${LS}reverse?lat=${la}&lon=${lo}&type=adres&rows=1&fl=straatnaam,huisnummer`);
+    const d = (await r.json()).response.docs[0];
+    return revCache[k] = d ? `${d.straatnaam} ${d.huisnummer}` : null;
+  } catch (e) { return revCache[k] = null; }
+}
+const pre = document.getElementById("presets");
+D.presets.forEach(p => {
+  const b = document.createElement("button"); b.type = "button"; b.textContent = p.naam;
+  b.onclick = () => { document.getElementById("q").value = p.adres.replace(", Rotterdam", ""); setLocation(p.lat, p.lon, p.adres.replace(", Rotterdam", "")); };
+  pre.appendChild(b);
+});
+
+// ---------- drempels ----------
+const ctl = [["sStoep", "vStoep", "stoep", v => m1(v)], ["sBoom", "vBoom", "boom", v => (v > 0 ? "≥ " : v < 0 ? "tot " : "") + m1(Math.abs(v)) + (v < 0 ? " eronder" : "")], ["sNorm", "vNorm", "norm", v => nl(v)]];
+for (const [s, o, k, f] of ctl) {
+  const el = document.getElementById(s), out = document.getElementById(o);
+  const upd = () => { P[k] = +el.value; out.textContent = f(P[k]); };
+  el.addEventListener("input", () => { upd(); render(); });
+  upd();
+}
+// start: overzicht van het hele demogebied, of de locatie uit de link (#lat,lon)
+const allB = L.latLngBounds(buurtRings.flatMap(b => b.rings.flat()));
+map.fitBounds(allB, { padding: [20, 20] });
+drawCells();
+const h = /^#(\d+\.\d+),(\d+\.\d+)/.exec(location.hash);
+if (h) setLocation(+h[1], +h[2], null);
+</script>
+</body>
+</html>

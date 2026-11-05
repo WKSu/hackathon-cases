@@ -85,3 +85,17 @@ Dit log wordt alleen aangevuld. Een oud besluit pas je niet aan: je vervangt het
 - **Decision:** het zoekvak vraagt live de PDOK Locatieserver (open, CORS toegestaan). Valt het adres buiten het demogebied, dan meldt de pagina dat. Zonder internet klik je op de kaart om de cirkel te plaatsen, of kies je een van drie voorbeeldadressen.
 - **Why:** "Voert adres in" is de kern van het formulier. De Locatieserver is de standaard-geocoder van de overheid en werkt vanaf `file://`.
 - **Rejected alternative:** een lokale adreslijst (BAG) in `data.js`. Dat maakt het bestand veel groter, en het is voor de demo niet nodig.
+
+## D-009: De inrit-toets vervalt; inritten gaan naar "ter plaatse checken"
+- **Status:** proposed (vervangt de rij "Inrit" in D-004)
+- **When / who:** 2026-11-05 13:30 · Claude
+- **Decision:** de pagina toetst niet meer op afstand tot een inrit. Inritten staan in elke popup bij "ter plaatse checken", samen met de kabel en de nooddeuren.
+- **Why:** de BGT kent in het hele demogebied **één** vlak met functie `inrit`. In Rotterdam zijn in- en uitritten vrijwel altijd gekarteerd als voetpad. Een toets die nooit afgaat, wekt de indruk dat er gecontroleerd is.
+- **Rejected alternative:** inritten afleiden uit verlaagde banden of BAG-garageboxen. Dat kan niet in het tijdsbudget en is ook niet te valideren.
+
+## D-010: Overzichtslaag = dekking t.o.v. de norm, niet het absolute tekort
+- **Status:** proposed
+- **When / who:** 2026-11-05 13:30 · Claude
+- **Decision:** per CBS-vierkant van 100 m: bestaande laadvakken binnen 200 m gedeeld door (openbare vakken binnen 200 m / norm). Er zijn zes klassen, van < 20% tot ≥ norm. Na het kiezen van een adres wordt de laag bijna doorzichtig, zodat de straat zichtbaar blijft.
+- **Why:** de mediane dekking in Noord is 3,3% laadvakken tegenover 10% norm. Met het absolute tekort viel bijna alles in de hoogste klasse en was de kaart één kleur. De verhouding laat wél zien waar het tekort het grootst is.
+- **Rejected alternative:** klassen op kwantielen. Die verschuiven bij elke andere norm en zijn lastig uit te leggen.

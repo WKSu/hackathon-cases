@@ -6,14 +6,14 @@ Team Laadlichten · onderwerp Wegbeheer · Themadag Mobiliteit, 5 november 2026.
 
 ## Status (demo vanmiddag)
 
-- [ ] Open besluiten in [`DECISIONS.md`](DECISIONS.md) bevestigd (D-001 t/m D-008)
-- [ ] Prep-script: parkeervakken, bestaande laadvakken, bomen, BGT (stoep, fietspad, groen, inrit) en CBS-woningen samenvoegen tot `data.js` (lokaal; zie D-002)
-- [ ] Kaart met adres zoeken en een cirkel van 200 m, met een omgevingspaneel: vakken, laadvakken, bomen, groen, stoepbreedte en woningen
-- [ ] Toets per parkeervak aan de beleidsregel: kleur geschikt / maatwerk / ongeschikt, met de reden per criterium (D-004, D-005)
-- [ ] Schuifjes voor de drempels (stoepbreedte, boomafstand, norm laadpunten), met de cijfers die direct meerekenen
-- [ ] Voorstel "beste nieuwe laadlocaties" binnen de cirkel, gerangschikt op tekort aan laadpunten (D-006)
-- [ ] Overzichtslaag voor het hele demogebied: bestaande laadvakken en het tekort per 100 m-vak
-- [ ] "Hoe te demonstreren" (3 stappen) en een screenshot
+- [ ] Open besluiten in [`DECISIONS.md`](DECISIONS.md) bevestigd (D-001 t/m D-010)
+- [x] Prep-script: parkeervakken, bestaande laadvakken, bomen, BGT (stoep, fietspad, groen) en CBS-woningen samenvoegen tot `data.js` (lokaal; zie D-002)
+- [x] Kaart met adres zoeken en een cirkel van 200 m, met een omgevingspaneel: vakken, laadvakken, bomen, groen, stoepbreedte en woningen
+- [x] Toets per parkeervak aan de beleidsregel: kleur geschikt / maatwerk / ongeschikt, met de reden per criterium (D-004, D-005, D-009)
+- [x] Schuifjes voor de drempels (stoepbreedte, boomafstand, norm laadpunten), met de cijfers die direct meerekenen
+- [x] Voorstel "beste nieuwe laadlocaties" binnen de cirkel, gerangschikt op tekort aan laadpunten (D-006)
+- [x] Overzichtslaag voor het hele demogebied: bestaande laadvakken en de dekking t.o.v. de norm per 100 m-vak (D-010)
+- [x] "Hoe te demonstreren" (3 stappen) en een screenshot (lokaal in `_private/laadpalen/screenshots/`; zie D-002)
 
 ## Brief
 
@@ -55,6 +55,24 @@ Overgenomen uit het ontwerpformulier van het team. Persoonsgegevens zijn weggela
 | BGT (PDOK) | wegdelen: voetpad, fietspad, parkeervlak, inrit, rijbaan; begroeid terrein | open (CC0) |
 | CBS 100 m-vierkanten 2024 | woningen en inwoners per vierkant | open |
 
+**Eerste bevindingen (demogebied Noord, 16.372 openbare vakken):**
+- 91% van de reguliere vakken grenst aan een BGT-stoep. De mediane stoepbreedte is 2,70 m, en 74% haalt de 2 m uit de beleidsregel.
+- 15% van de paalpunten valt onder de kroon van een grote boom (≥ 12 m).
+- Er zijn 630 bestaande laadvakken in het gebied plus een rand van 250 m. Binnen 200 m is de mediane dekking 3,3% van de vakken, tegenover de norm van 10% (1 op 10).
+- De BGT kent in het hele gebied maar één inrit. Daarom vervalt de inrit-toets (D-009).
+
+### Data opnieuw maken
+
+```bash
+cd cases/laadpalen/prototype
+uv run prep_laadpalen.py --parkeren <map met ParkeerVakken.shp> --tir <map TIR> \
+  --bomen <Bomen.shp> --cbs <cbs_vierkant100_2024_rotterdam.json>
+```
+
+- De eerste keer haalt het script de BGT op bij PDOK. Dat duurt ~10 minuten (~300 MB, gecachet in `data/private/cache/`). Daarna duurt het ~1 minuut.
+- Het script stopt met een melding als meer dan 40% van de vakken geen herkende stoeprand heeft. Dat wijst op een verkeerde bron of CRS.
+- Open daarna `prototype/index.html` met een dubbelklik. Je kunt een plek direct delen als link: `index.html#51.936404,4.486354`.
+
 ## Let op
 
 - **Een kaart is geen besluit.** Elke locatie krijgt nog een verkeerskundige toets en een verkeersbesluit met 6 weken bezwaartermijn. De UI zegt "kandidaat", niet "geschikt bevonden".
@@ -63,11 +81,12 @@ Overgenomen uit het ontwerpformulier van het team. Persoonsgegevens zijn weggela
 - **Privacy.** Het formulier vraagt om "het aantal adressen dat elektrisch rijdt". Kentekens per adres zijn persoonsgegevens. We tonen daarom woningen per 100 m-vak (CBS) en een aanname voor het aandeel EV's.
 - **Publieke repo.** De gemeentelijke lagen zijn niet bevestigd als open data. Daarom komt er geen `data.js` in git (D-002).
 
-## Hoe te demonstreren (concept, wordt definitief vóór de feature freeze)
+## Hoe te demonstreren
 
-1. Typ een adres in Noord (bijvoorbeeld *Zwaanshals*). De kaart zoomt in en tekent een cirkel van 200 m. Links zie je wat er in de buurt ligt, zoals parkeervakken, laadvakken, bomen en stoepbreedte.
-2. Elk parkeervak kleurt groen (kandidaat), oranje (maatwerk) of grijs (ongeschikt). Klik een vak aan om per regel uit de beleidsregel te zien waarom.
-3. Kijk naar **Beste nieuwe laadlocaties**: de plekken met het grootste tekort aan laadpunten. Schuif de stoepbreedte van 2,0 naar 1,7 m (de uitzondering van 90 cm doorgang) en zie hoeveel plekken erbij komen.
+0. Begin op het overzicht. Elk 100 m-vak kleurt naar de dekking met laadvakken ten opzichte van de norm. Hoe donkerder, hoe groter het tekort. De blauwe stippen zijn de bestaande laadvakken.
+1. Typ een adres in Noord, of klik op het voorbeeld **Zwaanshals**. De kaart zoomt in en tekent een cirkel van 200 m. Links staat wat er in de buurt ligt: 447 vakken, 7 laadvakken (1,6%), 433 bomen, 775 woningen en de stoepbreedte.
+2. Elk parkeervak kleurt groen (kandidaat), oranje (maatwerk) of grijs (ongeschikt). Klik een vak aan: je ziet per regel uit de beleidsregel ✓ of ✗, plus wat je ter plaatse moet checken (kabel, inrit, nooddeur).
+3. Kijk naar **Beste nieuwe laadlocaties**: genummerde palen op de plekken met het grootste tekort, met het adres ernaast. Schuif de boomafstand of de stoepbreedte en zie de kandidaten en de volgorde meeschuiven.
 
 ## Parking lot
 
