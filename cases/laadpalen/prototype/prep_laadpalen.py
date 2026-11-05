@@ -13,7 +13,7 @@
 
 Leest lokale gemeentelijke lagen (parkeervakken, bijzondere vakken, bomen,
 buurtgrenzen), haalt de BGT op bij PDOK en leest de CBS 100 m-vierkanten.
-Schrijft `data/private/data.js` (buiten git, zie DECISIONS D-002).
+Schrijft `data/data.js` (gepubliceerd via GitHub Pages, zie DECISIONS D-013).
 
 Per openbaar parkeervak:
 - stoeprand = de rand tegenover de rijbaan; stoepbreedte = lengte van een
@@ -43,7 +43,7 @@ from shapely.geometry import Point, shape
 HERE = Path(__file__).parent
 REPO = HERE.parents[2]
 SRC = REPO / "_private" / "laadpalen" / "data"
-OUT = HERE / "data" / "private" / "data.js"
+OUT = HERE / "data" / "data.js"
 CACHE = HERE / "data" / "private" / "cache"
 
 BUURTEN = [
@@ -108,6 +108,15 @@ NEGEER = {"Langsparkeren"}  # vorm, geen regime
 CAT = ["regulier", "laadvak", "parkeerduur", "bijzonder"]
 
 
+def publiek_type(t: str) -> str:
+    """Grof label voor publicatie: 'op kenteken' wijst naar één persoon (D-013)."""
+    return (
+        "Gehandicaptenparkeerplaats"
+        if t.startswith("Gehandicaptenparkeerplaats")
+        else t
+    )
+
+
 def load_area(tir: Path) -> gpd.GeoDataFrame:
     bu = gpd.read_file(tir / "Buurten" / "Buurten_vlakken.shp")
     bu = bu[bu["BUURTNAAM"].isin(BUURTEN)][["BUURTNAAM", "geometry"]]
@@ -148,7 +157,7 @@ def load_bays(parkeren: Path, area, ctx) -> gpd.GeoDataFrame:
     pv["cat"] = np.select(
         [best_rank == 3, best_rank == 2, best_rank == 1], [1, 2, 3], default=0
     )
-    pv["bijz_type"] = best_type
+    pv["bijz_type"] = [publiek_type(t) for t in best_type]
     pv["in_area"] = pv["rp"].within(area)
     print(
         f"vakken in context: {len(pv)}, in demogebied: {pv['in_area'].sum()}, "
@@ -264,7 +273,13 @@ def read_edge(prof: list[tuple[int, float, float]]) -> tuple[int, float, float, 
     # sla BGT-parkeervlak en smalle 'overig'-stroken (band) vlak achter de rand over
     while i < len(segs):
         k, s, e = segs[i]
-        if k == K["parkeren"] and e <= 1.5 or k == K["overig"] and e - max(s, 0) <= 0.8 and e <= 1.5:
+        if (
+            k == K["parkeren"]
+            and e <= 1.5
+            or k == K["overig"]
+            and e - max(s, 0) <= 0.8
+            and e <= 1.5
+        ):
             i += 1
         else:
             break
