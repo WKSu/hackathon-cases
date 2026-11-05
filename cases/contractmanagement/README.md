@@ -4,11 +4,14 @@ Team Contractmanagement · Themadag Mobiliteit, 5 november 2026.
 
 **De pitch in één zin:** één scherm dat per rol laat zien welke contracten aandacht vragen, wat er moet gebeuren, wie aan zet is en vóór wanneer.
 
+**Online (fictieve data):** https://wksu.github.io/hackathon/prototypes/contractmanagement/ · ook op de [resultatenpagina](https://wksu.github.io/hackathon/resultaten.html) (D-013).
+
 ![Overzicht van het dashboard met fictieve data](screenshot.png)
 
 ## Status (demo vanmiddag)
 
 - [ ] Open besluiten in [`DECISIONS.md`](DECISIONS.md) bevestigd (D-001 t/m D-012)
+- [x] Online op de themadag-site via GitHub Pages, met kaart op de resultatenpagina (D-013)
 - [x] Script met synthetische data in de 15 kolommen van de contractexport (D-002)
 - [x] Bouwscript: export → één `index.html` die opent met een dubbelklik (D-001)
 - [x] Eerste laag: vier stoplichten (tijd, geld, kwaliteit, rollen) en een samenvatting van één zin (D-006, D-011)
@@ -59,6 +62,7 @@ uv run bouw_dashboard.py          # → index.html
 ```
 
 - Met een eigen export (lokaal!): `uv run bouw_dashboard.py pad/naar/export.xlsx --uit pad/naar/uitvoer.html`. Het script stopt als een van de 15 kolommen ontbreekt.
+- Publiceren op de themadag-site (repo `WKSu/hackathon`, GitHub Pages): `uv run bouw_dashboard.py --uit <site-repo>/prototypes/contractmanagement/index.html --terug ../../resultaten.html`. Commit en push daarna in die repo naar `main`.
 - Open `index.html` met een dubbelklik. Links om direct te tonen: `#demo`, `#acties`, `#tijd`, `#persoon=cm:Contractmanager A`, `#contract=CM-21-9001`, `#bericht`.
 
 ## Hoe te demonstreren

@@ -131,3 +131,15 @@ Dit log wordt alleen aangevuld. Een oud besluit pas je niet aan: je vervangt het
 - **Decision:** "Demo: simuleer een maand gebruik" (of `#demo`) vult een deterministische set plannen, statussen en kwaliteitsoordelen in. Dat gebeurt alleen bij dummydata. Met "Wis alle aanvullingen" ga je terug naar de rauwe export.
 - **Why:** een verse export weet niets van plannen, dus staat bijna alles op rood. Met de knop ziet de zaal het verschil tussen "wat de export weet" en "wat het team aanvult".
 - **Rejected alternative:** de voorbeeld-aanvullingen al in de data zetten. Dan lijkt het of de export die informatie bevat.
+
+## D-013: Online op de themadag-site (GitHub Pages)
+- **Status:** accepted (eigenaar: "I want it to be hosted on github pages")
+- **When / who:** 2026-11-05 14:00 · Claude
+- **Decision:**
+  - Dezelfde build staat op https://wksu.github.io/hackathon/prototypes/contractmanagement/, in de site-repo `WKSu/hackathon`.
+  - Op de resultatenpagina staat een kaart met een screenshot, en de Teams-pagina linkt naar het dashboard.
+  - `bouw_dashboard.py --terug ../../resultaten.html` zet een link terug naar de resultaten in de kop.
+  - De pagina heeft `noindex, nofollow`, net als de rest van de site.
+- **Why:** alle data is synthetisch (D-002), dus het dashboard mag openbaar. De themadag-site is al de plek waar de prototypes staan. Eén bouwscript maakt de lokale en de online versie.
+- **Rejected alternative:** GitHub Pages aanzetten op `hackathon-cases`. Dan staat de hele repo als site online, en komen de cases op twee plekken te staan.
+- **Let op:** aanvullingen (plan, status, oordeel) bewaart de browser per site. Iedereen die de online versie gebruikt, ziet alleen zijn eigen aanvullingen (D-010).
