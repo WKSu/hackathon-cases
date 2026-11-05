@@ -25,7 +25,7 @@ Use `proposed` when the user should confirm. **Don't block on it**: carry on wit
 ## Commits
 
 - Commit small, after each checklist item, and push straight away so progress shows on GitHub.
-- Prefix: `[cm]`, `[ll]` or `[repo]`, then the type (`feat`, `fix`, `decision`, `data`, `docs`).
+- Prefix: `[cm]`, `[ll]`, `[lp]` or `[repo]`, then the type (`feat`, `fix`, `decision`, `data`, `docs`).
 - Tick the item off in the case README's status checklist in the same commit.
 
 ## Data and privacy (hard rules: the repo is PUBLIC)
